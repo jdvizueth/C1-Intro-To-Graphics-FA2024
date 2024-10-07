@@ -13,6 +13,7 @@ import {
 } from "../../anigraph";
 import React from "react";
 import {CustomSVGModel} from "./nodes/CustomSVGModel";
+import {BackgroundParticleSystemModel} from "./nodes/BackgroundParticleSystem";
 
 
 let nErrors = 0;
@@ -24,7 +25,8 @@ export class FleetFighterSceneModel extends App2DSceneModel{
      * elsewhere. In this case, we will initialize `particleSystem` in the `initScene()` function.
      * @type {FireParticleSystemModel}
      */
-    particleSystem!:FireParticleSystemModel;
+    fireParticleSystem!:FireParticleSystemModel;
+    starParticleSystem!:BackgroundParticleSystemModel;
 
     /**
      * Lab Cat's floating head. Lab Cat wants to show you how to create a simple quad textured with a cool texture.
@@ -68,6 +70,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         await appState.loadShaderMaterialModel(AMaterialManager.DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
         await appState.loadShaderMaterialModel(DefaultMaterials.TEXTURED2D_SHADER);
         await this.loadTexture( "./images/fireParticle2.png", "GaussianSplat")
+        await this.loadTexture( "./images/SmallStar.png", "SmallStar")
         this.labCatSVG = await SVGAsset.Load("./images/svg/LabCatVectorHead.svg");
         await Player.PreloadAssets();
     }
@@ -103,11 +106,9 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         // Now let's create some particles...
         // Here we initialize our particle system. We will initialize to a relatively small number of particles here to
         // be safe, but you can probably increase this on most modern machines. I can run thousands on my machine just fine.
-        this.particleSystem = new FireParticleSystemModel();
-
+        this.fireParticleSystem = new FireParticleSystemModel();
         let maxNumParticles = 100;
-        this.particleSystem.initParticles(maxNumParticles) // the number you pass here will be the maximum number of particles you can have at once for this particle system
-        // this.particleSystem.particles[0].position = V2(1, .1);
+        this.fireParticleSystem.initParticles(maxNumParticles) // the number you pass here will be the maximum number of particles you can have at once for this particle system
 
         // For now, use this material that I've created for you. It will render each particle as the
         // pixel-wise product of a particle texture and an instance color. The texture I've used here is a simple blurry
@@ -117,26 +118,36 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         let particleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
         particleMaterial.setUniform("opacityInMatrix", true);
         particleMaterial.setTexture("color", this.getTexture("GaussianSplat"))
-        this.particleSystem.setMaterial(particleMaterial)
+        this.fireParticleSystem.setMaterial(particleMaterial)
 
         // Let's add the particle system, which will cause the scene controller to create a particle system view and add
         // it to our scene graph. Pretty sweet.
         // this.addChild(this.particleSystem);
 
-        let targetTransform = this.particleSystem.getWorldTransform();
+        // Bind the particle system to the ship
+        let targetTransform = this.fireParticleSystem.getWorldTransform();
         let playerTransform = this.player.getWorldTransform();
         let newTransform = playerTransform.getInverse().times(targetTransform);
-        this.player.addChild(this.particleSystem);
-        this.particleSystem.setTransform(newTransform);
-        this.particleSystem.transform.setPosition(V3(0,-.2,0));
+        this.player.addChild(this.fireParticleSystem);
+        this.fireParticleSystem.setTransform(newTransform);
+        this.fireParticleSystem.transform.setPosition(V3(0,-.2,0));
+        // Here we will change the zValue of our particles so that they render behind Lab Cat...
+        this.fireParticleSystem.zValue = -0.01;
 
         /** By default, objects are placed at a depth of 0. If you don't change this, then child objects will render on top of parents, and objects added to the scene later will be rendered on top of objects you added earlier. If you want to change this behavior, you can set the zValue of an object. The depth of an object will be the sum of zValues along the path that leads from its scene graph node to world space. Objects with higher depth values will be rendered on top of objects with lower depth values. Note that any depth value outside the scene's depth range will not be rendered. The depth range is [this.cameraModel.camera.zNear, this.cameraModel.camera.zFar] (defaults to [-5,5] at time of writing in 2024...)
          */
 
+        // Initialize star particle system
+        this.starParticleSystem = new BackgroundParticleSystemModel();
+        maxNumParticles = 25;
+        this.starParticleSystem.initParticles(maxNumParticles)
 
-
-        // Here we will change the zValue of our particles so that they render behind Lab Cat...
-        this.particleSystem.zValue = -0.01;
+        particleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
+        particleMaterial.setUniform("opacityInMatrix", true);
+        particleMaterial.setTexture("color", this.getTexture("SmallStar"));
+        this.starParticleSystem.setMaterial(particleMaterial)
+        this.starParticleSystem.zValue = -0.01;
+        this.addChild(this.starParticleSystem);
 
 
         // Alternatively, we could have made the particles a child of Lab Cat, which would cause them to move with Lab Cat.

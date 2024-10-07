@@ -1,7 +1,7 @@
 import {App2DSceneController} from "../../anigraph/starter/App2D/App2DSceneController";
 import {FleetFighterSceneModel} from "./FleetFighterSceneModel";
 import {Polygon2DModel, Polygon2DView} from "../../anigraph/starter/nodes/polygon2D";
-import {FireParticleSystemModel, FireParticleSystemView} from "./nodes";
+import {FireParticleSystemModel, ParticleSystemView} from "./nodes";
 import {Player} from "./nodes/Player/Player";
 import {
     A2DMeshView,
@@ -12,6 +12,8 @@ import {
     ANodeView, ASVGView, Mat3, NodeTransform2D, NodeTransform3D, Vec2
 } from "../../anigraph";
 import {CustomSVGModel} from "./nodes/CustomSVGModel";
+import {MyCustomModel} from "../MainScene/nodes";
+import {BackgroundParticleSystemModel} from "./nodes/BackgroundParticleSystem";
 
 export class FleetFighterSceneController extends App2DSceneController{
     get model():FleetFighterSceneModel{
@@ -41,7 +43,8 @@ export class FleetFighterSceneController extends App2DSceneController{
      */
     initModelViewSpecs() {
         this.addModelViewSpec(Polygon2DModel, Polygon2DView);
-        this.addModelViewSpec(FireParticleSystemModel, FireParticleSystemView);
+        this.addModelViewSpec(FireParticleSystemModel, ParticleSystemView);
+        this.addModelViewSpec(BackgroundParticleSystemModel, ParticleSystemView);
         this.addModelViewSpec(Player, A2DMeshView);
         this.addModelViewSpec(CustomSVGModel, ASVGView);
     }
@@ -92,11 +95,11 @@ export class FleetFighterSceneController extends App2DSceneController{
                     }
                     if (keysDownState['w']) {
                         this.model.player.onMoveUp();
-                        this.model.particleSystem.growFlame();
+                        this.model.fireParticleSystem.growFlame();
                     }
                     if (keysDownState['s']) {
                         this.model.player.onMoveDown();
-                        this.model.particleSystem.shrinkFlame();
+                        this.model.fireParticleSystem.shrinkFlame();
                     }
                     if(event.key == "C"){
                     }
@@ -112,7 +115,7 @@ export class FleetFighterSceneController extends App2DSceneController{
                     }
                     if (!keysDownState['w'] && !keysDownState['s']) {
                         this.model.player.onHaltVertical();
-                        this.model.particleSystem.stillFlame();
+                        this.model.fireParticleSystem.stillFlame();
                     }
                 },
                 onDragStart:(event:AInteractionEvent, interaction:ADragInteraction)=>{

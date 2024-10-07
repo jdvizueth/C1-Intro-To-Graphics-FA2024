@@ -1,11 +1,13 @@
 import {
     Instanced2DParticleSystemView
-} from "../../../../anigraph/starter/nodes/instancedParticlesSystem/Instanced2DParticleSystemView";
-import {ASerializable, Color, Mat3} from "../../../../anigraph";
-import {Flame2DParticle} from "./Flame2DParticle";
+} from "../../../anigraph/starter/nodes/instancedParticlesSystem/Instanced2DParticleSystemView";
+import {ASerializable, Color, Mat3} from "../../../anigraph";
+import {Flame2DParticle} from "./FlameParticleSystem/Flame2DParticle";
+import {Background2DParticle} from "./BackgroundParticleSystem";
+import {Particle} from "./Particle";
 
-@ASerializable("FireParticleSystemView")
-export class FireParticleSystemView extends Instanced2DParticleSystemView<Flame2DParticle>{
+@ASerializable("ParticleSystemView")
+export class ParticleSystemView extends Instanced2DParticleSystemView<Particle>{
     /**
      * This function returns the Mat3 transform for placing the ith particle in 2D world coordinates. You can customize it if you want, but it is generally cleaner to customize how the `position` property of each particle is set in your model, and keep this function as it is.
      * @param i
