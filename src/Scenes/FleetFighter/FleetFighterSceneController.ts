@@ -16,6 +16,9 @@ import {MyCustomModel} from "../MainScene/nodes";
 import {BackgroundParticleSystemModel} from "./nodes/BackgroundParticleSystem";
 
 export class FleetFighterSceneController extends App2DSceneController{
+    prevKeyW: boolean = false;
+    prevKeyS: boolean = false;
+
     get model():FleetFighterSceneModel{
         return this._model as FleetFighterSceneModel;
     }
@@ -85,6 +88,7 @@ export class FleetFighterSceneController extends App2DSceneController{
                     /**
                      * This is how you handle arrow keys
                      */
+
                     let keysDownState = self.getKeysDownState();
                     if (keysDownState['d']) {
 
@@ -96,10 +100,26 @@ export class FleetFighterSceneController extends App2DSceneController{
                     if (keysDownState['w']) {
                         this.model.player.onMoveUp();
                         this.model.fireParticleSystem.growFlame();
+                        if (!this.prevKeyW){
+                            this.model.starParticleSystem.increaseSpeed();
+                            this.model.star2ParticleSystem.increaseSpeed();
+                            this.model.star3ParticleSystem.increaseSpeed();
+                        }
+                        if (!this.prevKeyW){
+                            this.prevKeyW = true;
+                        }
                     }
                     if (keysDownState['s']) {
                         this.model.player.onMoveDown();
                         this.model.fireParticleSystem.shrinkFlame();
+                        if (!this.prevKeyS){
+                            this.model.starParticleSystem.decreaseSpeed();
+                            this.model.star2ParticleSystem.decreaseSpeed();
+                            this.model.star3ParticleSystem.decreaseSpeed();
+                        }
+                        if (!this.prevKeyS){
+                            this.prevKeyS = true;
+                        }
                     }
                     if(event.key == "C"){
                     }
@@ -112,6 +132,22 @@ export class FleetFighterSceneController extends App2DSceneController{
                     let keysDownState = self.getKeysDownState();
                     if (!keysDownState['d'] && !keysDownState['a']) {
                         this.model.player.onHaltHorizontal();
+                    }
+                    if (!keysDownState['w']){
+                        if (this.prevKeyW){
+                            this.model.starParticleSystem.revertSpeed();
+                            this.model.star2ParticleSystem.revertSpeed();
+                            this.model.star3ParticleSystem.revertSpeed();
+                        }
+                        this.prevKeyW = false;
+                    }
+                    if (!keysDownState['s']){
+                        if (this.prevKeyS){
+                            this.model.starParticleSystem.increaseSpeed();
+                            this.model.star2ParticleSystem.increaseSpeed();
+                            this.model.star3ParticleSystem.increaseSpeed();
+                        }
+                        this.prevKeyS = false;
                     }
                     if (!keysDownState['w'] && !keysDownState['s']) {
                         this.model.player.onHaltVertical();

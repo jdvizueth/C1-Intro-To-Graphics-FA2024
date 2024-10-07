@@ -144,8 +144,8 @@ export class FleetFighterSceneModel extends App2DSceneModel{
 
         // Medium-sized stars
         let colorM = Color.Red().GetSpun(Math.PI);
-        this.starParticleSystem = new BackgroundParticleSystemModel(colorM, .75, 1.5, 0.2, 0.5, 0.25);
-        maxNumParticles = 30;
+        this.starParticleSystem = new BackgroundParticleSystemModel(colorM, .75, 1.5, 0.1, 0.4, 0.25);
+        maxNumParticles = 50;
         this.starParticleSystem.initParticles(maxNumParticles)
 
         let smallStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
@@ -157,7 +157,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
 
         // Small stars
         this.star2ParticleSystem = new BackgroundParticleSystemModel(Color.White(), 0.55, 0.5, 0.1, 0.5);
-        maxNumParticles = 150;
+        maxNumParticles = 250;
         this.star2ParticleSystem.initParticles(maxNumParticles)
 
         this.star2ParticleSystem.setMaterial(smallStarParticleMaterial)
@@ -168,8 +168,8 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         let largeStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
         let colorL = new Color(255,255,0,1);
         // colorL = colorL.GetSpun(4);
-        this.star3ParticleSystem = new BackgroundParticleSystemModel(colorL, 1.2, 2.5, 0.2, 0.4, 0.1);
-        maxNumParticles = 3;
+        this.star3ParticleSystem = new BackgroundParticleSystemModel(colorL, 1.2, 2.5, 0.1, 0.3, 0.1);
+        maxNumParticles = 8;
         this.star3ParticleSystem.initParticles(maxNumParticles)
         largeStarParticleMaterial.setTexture("color", this.getTexture("MedStar"));
         this.star3ParticleSystem.setMaterial(largeStarParticleMaterial)

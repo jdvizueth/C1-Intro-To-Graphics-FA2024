@@ -5,6 +5,7 @@ import {
 import {Background2DParticle} from "./Background2DParticle";
 import {AParticleEnums} from "../../../../anigraph/physics/particles/AParticleEnums";
 import {Vector3} from "three";
+import {GameConfigs} from "../../FleetFighterGameConfigs";
 
 @ASerializable("BackgroundParticleSystemModel")
 export class BackgroundParticleSystemModel extends Instanced2DParticleSystemModel<Background2DParticle>{
@@ -19,6 +20,7 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
     alphaRate:number;
     starColor:Color;
     starSpeed:number;
+    currSpeed:number;
     starRadius:number;
 
     constructor(color?: Color, speed?: number, radius?:number, minAlpha?:number, maxAlpha?:number, alphaRate?:number) {
@@ -29,6 +31,7 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
         this.minAlpha = minAlpha??0.1;
         this.maxAlpha = maxAlpha??0.5;
         this.alphaRate = alphaRate??0.25;
+        this.currSpeed = speed??1;
     }
 
 
@@ -71,7 +74,7 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
             if (this.particles[p].visible){
                 let particle = this.particles[p];
 
-                particle.position.y -= time*particle.speed;
+                particle.position.y -= time*(particle.speed+this.currSpeed);
                 // particle.color.a += .1
 
                 // particle.color.a = 0.5;
@@ -113,7 +116,7 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
             color = color.GetSpun(spinAngle);
             // Randomize speed slightly
             let random = Math.random() * 0.4 - 0.2;
-            let speed = this.starSpeed + random;
+            let speed = random;
             let newp = new Background2DParticle(spawn, this.starRadius, color, speed);
 
             // set it to be visible
@@ -151,6 +154,19 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
                 p.isBrightening = true;
             }
         }
+    }
+
+    increaseSpeed(){
+        // this.starSpeed += GameConfigs.PLAYER_MOVESPEED;
+        this.currSpeed = this.currSpeed*1.5;
+    }
+    revertSpeed(){
+        // this.starSpeed -= GameConfigs.PLAYER_MOVESPEED;
+        this.currSpeed = this.starSpeed;
+    }
+    decreaseSpeed(){
+        // this.starSpeed -= GameConfigs.PLAYER_MOVESPEED;
+        this.currSpeed = this.currSpeed*0.9;
     }
 
 }
