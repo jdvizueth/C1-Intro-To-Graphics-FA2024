@@ -27,6 +27,8 @@ export class FleetFighterSceneModel extends App2DSceneModel{
      */
     fireParticleSystem!:FireParticleSystemModel;
     starParticleSystem!:BackgroundParticleSystemModel;
+    star2ParticleSystem!:BackgroundParticleSystemModel;
+    star3ParticleSystem!:BackgroundParticleSystemModel;
 
     /**
      * Lab Cat's floating head. Lab Cat wants to show you how to create a simple quad textured with a cool texture.
@@ -71,6 +73,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         await appState.loadShaderMaterialModel(DefaultMaterials.TEXTURED2D_SHADER);
         await this.loadTexture( "./images/fireParticle2.png", "GaussianSplat")
         await this.loadTexture( "./images/SmallStar.png", "SmallStar")
+        await this.loadTexture( "./images/MedStar.png", "MedStar")
         this.labCatSVG = await SVGAsset.Load("./images/svg/LabCatVectorHead.svg");
         await Player.PreloadAssets();
     }
@@ -115,10 +118,10 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         // dot. Can't go wrong with a blurry dot...
         // You can use a different texture if you want by putting it in the /public/images/ directory, loading it in
         // PreloadAssets() with its own name and assigning it here using that name instead of "GaussianSplat"
-        let particleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
-        particleMaterial.setUniform("opacityInMatrix", true);
-        particleMaterial.setTexture("color", this.getTexture("GaussianSplat"))
-        this.fireParticleSystem.setMaterial(particleMaterial)
+        let fireParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
+        fireParticleMaterial.setUniform("opacityInMatrix", true);
+        fireParticleMaterial.setTexture("color", this.getTexture("GaussianSplat"))
+        this.fireParticleSystem.setMaterial(fireParticleMaterial)
 
         // Let's add the particle system, which will cause the scene controller to create a particle system view and add
         // it to our scene graph. Pretty sweet.
@@ -137,17 +140,42 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         /** By default, objects are placed at a depth of 0. If you don't change this, then child objects will render on top of parents, and objects added to the scene later will be rendered on top of objects you added earlier. If you want to change this behavior, you can set the zValue of an object. The depth of an object will be the sum of zValues along the path that leads from its scene graph node to world space. Objects with higher depth values will be rendered on top of objects with lower depth values. Note that any depth value outside the scene's depth range will not be rendered. The depth range is [this.cameraModel.camera.zNear, this.cameraModel.camera.zFar] (defaults to [-5,5] at time of writing in 2024...)
          */
 
-        // Initialize star particle system
-        this.starParticleSystem = new BackgroundParticleSystemModel();
-        maxNumParticles = 25;
+        // Initialize star particle systems
+
+        // Medium-sized stars
+        let colorM = Color.Red().GetSpun(Math.PI);
+        this.starParticleSystem = new BackgroundParticleSystemModel(colorM, .75, 1.5, 0.2, 0.5, 0.25);
+        maxNumParticles = 30;
         this.starParticleSystem.initParticles(maxNumParticles)
 
-        particleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
-        particleMaterial.setUniform("opacityInMatrix", true);
-        particleMaterial.setTexture("color", this.getTexture("SmallStar"));
-        this.starParticleSystem.setMaterial(particleMaterial)
+        let smallStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
+        smallStarParticleMaterial.setUniform("opacityInMatrix", true);
+        smallStarParticleMaterial.setTexture("color", this.getTexture("SmallStar"));
+        this.starParticleSystem.setMaterial(smallStarParticleMaterial)
         this.starParticleSystem.zValue = -0.01;
         this.addChild(this.starParticleSystem);
+
+        // Small stars
+        this.star2ParticleSystem = new BackgroundParticleSystemModel(Color.White(), 0.55, 0.5, 0.1, 0.5);
+        maxNumParticles = 150;
+        this.star2ParticleSystem.initParticles(maxNumParticles)
+
+        this.star2ParticleSystem.setMaterial(smallStarParticleMaterial)
+        this.star2ParticleSystem.zValue = -0.01;
+        this.addChild(this.star2ParticleSystem);
+
+        // Larger stars
+        let largeStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
+        let colorL = new Color(255,255,0,1);
+        // colorL = colorL.GetSpun(4);
+        this.star3ParticleSystem = new BackgroundParticleSystemModel(colorL, 1.2, 2.5, 0.2, 0.4, 0.1);
+        maxNumParticles = 3;
+        this.star3ParticleSystem.initParticles(maxNumParticles)
+        largeStarParticleMaterial.setTexture("color", this.getTexture("MedStar"));
+        this.star3ParticleSystem.setMaterial(largeStarParticleMaterial)
+        this.star3ParticleSystem.zValue = -0.01;
+        this.addChild(this.star3ParticleSystem);
+
 
 
         // Alternatively, we could have made the particles a child of Lab Cat, which would cause them to move with Lab Cat.

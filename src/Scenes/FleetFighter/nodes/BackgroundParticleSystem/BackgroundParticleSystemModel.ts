@@ -1,4 +1,4 @@
-import {ASerializable, V2} from "../../../../anigraph";
+import {ASerializable, Color, Mat3, V2} from "../../../../anigraph";
 import {
     Instanced2DParticleSystemModel
 } from "../../../../anigraph/starter/nodes/instancedParticlesSystem/Instanced2DParticleSystemModel";
@@ -14,9 +14,22 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
     spawnTimerProgress: number = 0;
     yDespawn:number = -11;
     ySpawn:number = 11;
-    maxAlpha:number = 0.5;
-    minAlpha:number = 0.1;
-    alphaRate:number = 0.002;
+    maxAlpha:number;
+    minAlpha:number;
+    alphaRate:number;
+    starColor:Color;
+    starSpeed:number;
+    starRadius:number;
+
+    constructor(color?: Color, speed?: number, radius?:number, minAlpha?:number, maxAlpha?:number, alphaRate?:number) {
+        super();
+        this.starColor = color??Color.White();
+        this.starSpeed = speed??1;
+        this.starRadius = radius??1;
+        this.minAlpha = minAlpha??0.1;
+        this.maxAlpha = maxAlpha??0.5;
+        this.alphaRate = alphaRate??0.25;
+    }
 
 
     /**
@@ -49,15 +62,20 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
 
         let time = t - this.lastUpdateTime;
 
+        // let currTransform = this.transform.getMatrix();
+        // let rotation = Mat3.Rotation(0.8);
+        // this.setTransformMat3(currTransform.times(rotation));
+
         // iterate through the visible particles and update properties of each one
         for(let p=0;p<this.nParticles;p++){
             if (this.particles[p].visible){
                 let particle = this.particles[p];
 
-                particle.position.y -= .004*particle.speed;
+                particle.position.y -= time*particle.speed;
+                // particle.color.a += .1
 
                 // particle.color.a = 0.5;
-                this.handleBrightness(particle);
+                this.handleBrightness(particle, time);
 
                 // Update radius to get smaller with age
                 // particle.radius = particle.iRadius * (1-lifePercentage);
@@ -86,15 +104,20 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
         if(nParticles === undefined){nParticles = AParticleEnums.DEFAULT_MAX_N_PARTICLES;}
         for(let i=0;i<nParticles;i++){
             // create one particle
-            let newp = new Background2DParticle();
-            newp.position = V2(Math.random() * 18 - 9, Math.random() * 20 - 10);
-            newp.color.a = Math.random() * 0.5;
+            let spawn = V2(Math.random() * 18 - 9, Math.random() * 20 - 10);
+            // Get span of colors
+            let color = this.starColor.clone();
+            color.a = Math.random() * 0.5;
+            let angle = Math.random() * 30;
+            let spinAngle = (angle*(Math.PI/180));
+            color = color.GetSpun(spinAngle);
+            // Randomize speed slightly
+            let random = Math.random() * 0.4 - 0.2;
+            let speed = this.starSpeed + random;
+            let newp = new Background2DParticle(spawn, this.starRadius, color, speed);
 
-            // set it to be not visible
+            // set it to be visible
             newp.visible=true;
-
-            // Add to hidden queue to be spawned later
-            // this.hiddenParticles.push(newp);
 
             // add it to the particle system
             this.addParticle(newp);
@@ -105,35 +128,20 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
     spawnParticle(p:Background2DParticle | undefined){
         if (p !== undefined){
             // Reset position
-            // p.position = p.startPos;
-            // // p.position = V2(0, 11);
             let randomPosX = Math.random() * 18 - 9;
             p.position = V2(randomPosX, 11);
-
-            // Reset radius
-            // p.radius = p.iRadius;
-            // p.iRadius = .4;
-
-            // Reset color
-            // p.color = p.iColor;
-            // p.iColor = Color.FromRGBuintAfloat(255, 255, 0, .8);
-
-            // p.age = 0;
-            // p.radius = .5;
-            // this.activeParticles.push(p);
-            // p.visible = true;
-            // this.particles[p].color = Color.Random();
         }
 
     }
-    handleBrightness(p:Background2DParticle | undefined){
+    handleBrightness(p:Background2DParticle | undefined, dt:number){
         if (p !== undefined){
             // Update alpha value
+            // p.color.a += .1;
             if (p.isBrightening){
-                p.color.a += this.alphaRate;
+                p.color.a += this.alphaRate*dt;
             }
             else{
-                p.color.a -= this.alphaRate;
+                p.color.a -= this.alphaRate*dt;
             }
             // Check if passed max or min alpha
             if (p.color.a >= this.maxAlpha){

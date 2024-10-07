@@ -6,15 +6,12 @@ import {Particle} from "../Particle";
  * You can customize your particle class with additional properties and functions.
  */
 export class Background2DParticle extends Particle{
-    mass:number;
-    velocity:Vec2;
+    // mass:number;
+    // velocity:Vec2;
     visible:boolean=true;
-    iRadius:number;
     depth:number=0;
-    iColor:Color;
-    startPos:Vec2;
-    speed:number;
     isBrightening:boolean=true;
+    speed:number;
 
     /**
      * You can show or hide particles by setting their `visible` parameter.
@@ -27,20 +24,9 @@ export class Background2DParticle extends Particle{
     //     this.visible = false;
     // }
 
-    constructor(position?:Vec2, startPosition?:Vec2, velocity?:Vec2, mass?:number, radius?:number, lifespan?:number){
-        super(position, radius);
-        this.position = V2(9,11);
-        // this.position = position??V2();
-        this.velocity = velocity??V2();
-        this.mass = mass??1;
-        // this.radius = radius??.5;
-        this.iRadius = radius??.5;
-        // this.color = Color.Red();
-        this.iColor = Color.White();
-        // this.visible = true;
-        this.startPos = this.position;
-
-        this.speed = 2;
+    constructor(position?:Vec2, radius?:number, color?:Color, speed?:number){
+        super(position, radius, color);
+        this.speed = speed??1;
     }
 }
 

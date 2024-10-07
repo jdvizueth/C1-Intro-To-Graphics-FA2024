@@ -22,11 +22,11 @@ export class Particle implements Particle2D{
         this.visible = false;
     }
 
-    constructor(position?:Vec2, radius?:number){
+    constructor(position?:Vec2, radius?:number, color?:Color){
         this.visible = true;
         this.position = position??V2();
         this.radius = radius??1;
-        this.color = Color.White();
+        this.color = color??Color.White();
     }
 }
 
