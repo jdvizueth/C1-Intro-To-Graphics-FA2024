@@ -158,7 +158,7 @@ export class BackgroundParticleSystemModel extends Instanced2DParticleSystemMode
 
     increaseSpeed(){
         // this.starSpeed += GameConfigs.PLAYER_MOVESPEED;
-        this.currSpeed = this.currSpeed*1.5;
+        this.currSpeed = this.currSpeed*1.8;
     }
     revertSpeed(){
         // this.starSpeed -= GameConfigs.PLAYER_MOVESPEED;
