@@ -32,14 +32,14 @@ export class Flame2DParticle implements Particle{
         this.visible = false;
     }
 
-    constructor(position?:Vec2, startPosition?:Vec2, velocity?:Vec2, mass?:number, radius?:number, lifespan?:number){
+    constructor(position?:Vec2, startPosition?:Vec2, velocity?:Vec2, mass?:number, radius?:number, lifespan?:number, color?:Color){
         this.position = position??V2();
         this.velocity = velocity??V2();
         this.mass = mass??1;
-        this.radius = radius??.5;
-        this.iRadius = radius??.5;
-        this.color = Color.Red();
-        this.iColor = Color.Red();
+        this.radius = radius??.4;
+        this.iRadius = radius??.4;
+        this.color = color??Color.FromRGBuintAfloat(255, 255, 0, .8);
+        this.iColor = color??Color.FromRGBuintAfloat(255, 255, 0, .8);
         this.visible = true;
         this.lifeSpan = lifespan??.5;
         this.startPos = startPosition??new Vec2(0,0);

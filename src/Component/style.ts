@@ -46,8 +46,8 @@ export const Layout = styled.div`
     border: none;
   }
   .anigraphcontainer{
-    max-height: 80%;
-    max-width: 80%;
+    max-height: 75%;
+    max-width: 75%;
     aspect-ratio: 1;
     border: black;
     border-radius: 3px;

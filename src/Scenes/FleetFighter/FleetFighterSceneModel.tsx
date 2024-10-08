@@ -1,6 +1,7 @@
 import { App2DSceneModel } from "anigraph/starter/App2D/App2DSceneModel";
 import {FireParticleSystemModel} from "./nodes";
 import {Player} from "./nodes/Player/Player";
+import {Meteoroid} from "./nodes/Meteoroid/Meteoroid";
 import {
     AMaterialManager,
     ANodeModel,
@@ -14,6 +15,7 @@ import {
 import React from "react";
 import {CustomSVGModel} from "./nodes/CustomSVGModel";
 import {BackgroundParticleSystemModel} from "./nodes/BackgroundParticleSystem";
+import {SmokeParticleSystemModel} from "./nodes/FlameParticleSystem/SmokeParticleSystemModel";
 
 
 let nErrors = 0;
@@ -26,23 +28,14 @@ export class FleetFighterSceneModel extends App2DSceneModel{
      * @type {FireParticleSystemModel}
      */
     fireParticleSystem!:FireParticleSystemModel;
+    smokeParticleSystem!:SmokeParticleSystemModel;
     starParticleSystem!:BackgroundParticleSystemModel;
     star2ParticleSystem!:BackgroundParticleSystemModel;
     star3ParticleSystem!:BackgroundParticleSystemModel;
 
-    /**
-     * Lab Cat's floating head. Lab Cat wants to show you how to create a simple quad textured with a cool texture.
-     * In this case, a texture of Lab Cat's floating head... What could be cooler than that?
-     * @type {Player}
-     */
-    player!:Player;
 
-    /**
-     * Lab Cat vector asset. Also a floating head.
-     * @type {SVGAsset}
-     */
-    labCatSVG!:SVGAsset;
-    labCatVectorHead!:CustomSVGModel;
+    player!:Player;
+    meteoroids:Meteoroid[] = [];
 
 
     /**
@@ -74,8 +67,10 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         await this.loadTexture( "./images/fireParticle2.png", "GaussianSplat")
         await this.loadTexture( "./images/SmallStar.png", "SmallStar")
         await this.loadTexture( "./images/MedStar.png", "MedStar")
-        this.labCatSVG = await SVGAsset.Load("./images/svg/LabCatVectorHead.svg");
+        // await this.loadTexture( "./images/SmMeteroid.png", "Meteroid")
+        // this.labCatSVG = await SVGAsset.Load("./images/svg/LabCatVectorHead.svg");
         await Player.PreloadAssets();
+        await Meteoroid.PreloadAssets();
     }
 
     /**
@@ -92,17 +87,21 @@ export class FleetFighterSceneModel extends App2DSceneModel{
     async initScene(){
         let appState = GetAppState();
 
-        // Create an instance of Lab Cat's floating head. Not as cool as the real Lab Cat, but still pretty cool.
+        // Create an instance of the player
         this.player = Player.Create();
-        // The geometry itself is a unit square that ranges from -0.5 to 0.5 in x and y. Let's scale it up x3.
+        // The geometry itself is a unit square that ranges from -0.5 to 0.5 in x and y. Let's scale it up x2.5.
         this.player.transform.scale = 2.5;
-
-        // Lab Cat on the scene. Or in the scene, I guess... Either way, this will cause the controller to make a view.
         this.addChild(this.player);
+
+        // Create meteoroids
+
+        this.meteoroids.push(Meteoroid.Create());
+        // this.addChild(this.meteoroids[0]);
+        this.meteoroids[0].transform.scale = 3.5;
 
 
         // Lab Cat on the scene... again!
-        this.labCatVectorHead = new CustomSVGModel(this.labCatSVG);
+        // this.labCatVectorHead = new CustomSVGModel(this.labCatSVG);
         // this.addChild(this.labCatVectorHead);
 
 
@@ -123,19 +122,25 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         fireParticleMaterial.setTexture("color", this.getTexture("GaussianSplat"))
         this.fireParticleSystem.setMaterial(fireParticleMaterial)
 
-        // Let's add the particle system, which will cause the scene controller to create a particle system view and add
-        // it to our scene graph. Pretty sweet.
-        // this.addChild(this.particleSystem);
+        // Smoke Particle System
+        this.smokeParticleSystem = new SmokeParticleSystemModel();
+        maxNumParticles = 100;
+        this.smokeParticleSystem.initParticles(maxNumParticles)
+        let smokeParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
+        smokeParticleMaterial.setUniform("opacityInMatrix", true);
+        smokeParticleMaterial.setTexture("color", this.getTexture("GaussianSplat"))
+        this.smokeParticleSystem.setMaterial(fireParticleMaterial)
+        // this.addChild(this.smokeParticleSystem);
 
         // Bind the particle system to the ship
-        let targetTransform = this.fireParticleSystem.getWorldTransform();
-        let playerTransform = this.player.getWorldTransform();
-        let newTransform = playerTransform.getInverse().times(targetTransform);
-        this.player.addChild(this.fireParticleSystem);
-        this.fireParticleSystem.setTransform(newTransform);
+        this.player.makeParticleSystemChild(this.fireParticleSystem);
         this.fireParticleSystem.transform.setPosition(V3(0,-.2,0));
-        // Here we will change the zValue of our particles so that they render behind Lab Cat...
+        this.player.makeParticleSystemChild(this.smokeParticleSystem);
+        this.smokeParticleSystem.transform.setPosition(V3(0,0.1,0));
+
+        // Here we will change the zValue of our particles so that they render behind the player...
         this.fireParticleSystem.zValue = -0.01;
+
 
         /** By default, objects are placed at a depth of 0. If you don't change this, then child objects will render on top of parents, and objects added to the scene later will be rendered on top of objects you added earlier. If you want to change this behavior, you can set the zValue of an object. The depth of an object will be the sum of zValues along the path that leads from its scene graph node to world space. Objects with higher depth values will be rendered on top of objects with lower depth values. Note that any depth value outside the scene's depth range will not be rendered. The depth range is [this.cameraModel.camera.zNear, this.cameraModel.camera.zFar] (defaults to [-5,5] at time of writing in 2024...)
          */
@@ -144,8 +149,8 @@ export class FleetFighterSceneModel extends App2DSceneModel{
 
         // Medium-sized stars
         let colorM = Color.Red().GetSpun(Math.PI);
-        this.starParticleSystem = new BackgroundParticleSystemModel(colorM, .75, 1.5, 0.1, 0.4, 0.25);
-        maxNumParticles = 50;
+        this.starParticleSystem = new BackgroundParticleSystemModel(colorM, 4, 1.5, 0.1, 0.4, 0.25);
+        maxNumParticles = 25;
         this.starParticleSystem.initParticles(maxNumParticles)
 
         let smallStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
@@ -156,7 +161,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.addChild(this.starParticleSystem);
 
         // Small stars
-        this.star2ParticleSystem = new BackgroundParticleSystemModel(Color.White(), 0.55, 0.5, 0.1, 0.5);
+        this.star2ParticleSystem = new BackgroundParticleSystemModel(Color.White(), 1.5, 0.5, 0.1, 0.5);
         maxNumParticles = 250;
         this.star2ParticleSystem.initParticles(maxNumParticles)
 
@@ -168,19 +173,14 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         let largeStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
         let colorL = new Color(255,255,0,1);
         // colorL = colorL.GetSpun(4);
-        this.star3ParticleSystem = new BackgroundParticleSystemModel(colorL, 1.2, 2.5, 0.1, 0.3, 0.1);
-        maxNumParticles = 8;
+        this.star3ParticleSystem = new BackgroundParticleSystemModel(colorL, 6, 2.5, 0.1, 0.3, 0.1);
+        maxNumParticles = 3;
         this.star3ParticleSystem.initParticles(maxNumParticles)
         largeStarParticleMaterial.setTexture("color", this.getTexture("MedStar"));
         this.star3ParticleSystem.setMaterial(largeStarParticleMaterial)
         this.star3ParticleSystem.zValue = -0.01;
         this.addChild(this.star3ParticleSystem);
 
-
-
-        // Alternatively, we could have made the particles a child of Lab Cat, which would cause them to move with Lab Cat.
-        // this.labCatFloatingHead.addChild(this.particleSystem);
-        // this.labCatVectorHead.addChild(this.particleSystem);
 
         appState.setState("LabCatScale", 1.0);
         appState.setReactGUIContentFunction(
@@ -205,6 +205,9 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             // This is a good strategy in general. It iterates over all of the models in the scene and calls the
             // individual `timeUpdate` functions for each model. If you don't have many interactions between models you
             // can usually implement most of your scene logic this way
+            // for (let i = 0; i < this.meteoroids.length; i++){
+            //     this.meteoroids[i].timeUpdate(t);
+            // }
             this.mapOverDescendants((d)=>{
                 (d as ANodeModel).timeUpdate(t);
             })

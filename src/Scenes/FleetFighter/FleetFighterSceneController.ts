@@ -12,8 +12,10 @@ import {
     ANodeView, ASVGView, Mat3, NodeTransform2D, NodeTransform3D, Vec2
 } from "../../anigraph";
 import {CustomSVGModel} from "./nodes/CustomSVGModel";
-import {MyCustomModel} from "../MainScene/nodes";
+import {MyCustomModel, MyCustomView} from "../MainScene/nodes";
 import {BackgroundParticleSystemModel} from "./nodes/BackgroundParticleSystem";
+import {Meteoroid} from "./nodes/Meteoroid/Meteoroid";
+import {SmokeParticleSystemModel} from "./nodes/FlameParticleSystem/SmokeParticleSystemModel";
 
 export class FleetFighterSceneController extends App2DSceneController{
     prevKeyW: boolean = false;
@@ -47,8 +49,10 @@ export class FleetFighterSceneController extends App2DSceneController{
     initModelViewSpecs() {
         this.addModelViewSpec(Polygon2DModel, Polygon2DView);
         this.addModelViewSpec(FireParticleSystemModel, ParticleSystemView);
+        this.addModelViewSpec(SmokeParticleSystemModel, ParticleSystemView);
         this.addModelViewSpec(BackgroundParticleSystemModel, ParticleSystemView);
         this.addModelViewSpec(Player, A2DMeshView);
+        this.addModelViewSpec(Meteoroid, A2DMeshView);
         this.addModelViewSpec(CustomSVGModel, ASVGView);
     }
 
@@ -143,9 +147,9 @@ export class FleetFighterSceneController extends App2DSceneController{
                     }
                     if (!keysDownState['s']){
                         if (this.prevKeyS){
-                            this.model.starParticleSystem.increaseSpeed();
-                            this.model.star2ParticleSystem.increaseSpeed();
-                            this.model.star3ParticleSystem.increaseSpeed();
+                            this.model.starParticleSystem.revertSpeed();
+                            this.model.star2ParticleSystem.revertSpeed();
+                            this.model.star3ParticleSystem.revertSpeed();
                         }
                         this.prevKeyS = false;
                     }
@@ -176,7 +180,7 @@ export class FleetFighterSceneController extends App2DSceneController{
                 onClick:(event:AInteractionEvent)=>{
                     this.eventTarget.focus();
                     let cursorPosition = this.getWorldCoordinatesOfCursorEvent(event) as Vec2;
-                    this.model.labCatVectorHead.setTransform(Mat3.Translation2D(cursorPosition));
+                    // this.model.labCatVectorHead.setTransform(Mat3.Translation2D(cursorPosition));
 
                     let keysDownState = self.getKeysDownState();
                     if(cursorPosition) {

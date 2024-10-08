@@ -3,23 +3,26 @@ import {
     ASerializable,
     AShaderMaterial, ATexture, DefaultMaterials, GetAppState,
     NodeTransform2D,
-    V2,
+    V2, V3,
     Vec2,
     VertexArray2D
 } from "../../../../anigraph";
 import {GameConfigs} from "../../FleetFighterGameConfigs";
+import {SmokeParticleSystemModel} from "../FlameParticleSystem/SmokeParticleSystemModel";
 
 @ASerializable("Player")
 export class Player extends A2DMeshModelPRSA {
-    static LabCatFloatingHeadMaterial:AShaderMaterial|undefined=undefined;
-    static LabCatFloatingHeadTexture:ATexture;
+    static PlayerMaterial:AShaderMaterial|undefined=undefined;
+    static PlayerTexture:ATexture;
 
     velocity:Vec2;
     speed:number=0.1;
+    smokeParticleSystem!:SmokeParticleSystemModel;
+    windDirection:number = 1;
 
 
     constructor(verts?:VertexArray2D, transform?:NodeTransform2D, ...args:any[]) {
-        if(Player.LabCatFloatingHeadMaterial === undefined){
+        if(Player.PlayerMaterial === undefined){
             throw new Error("Use Player.CreateLabCatFloatingHead(...) instead of constructor")
         }
         super(verts, transform);
@@ -27,8 +30,8 @@ export class Player extends A2DMeshModelPRSA {
     }
 
     static async PreloadAssets(){
-        if(Player.LabCatFloatingHeadMaterial === undefined){
-            Player.LabCatFloatingHeadTexture = await ATexture.LoadAsync("./images/Ship1.png");
+        if(Player.PlayerMaterial === undefined){
+            Player.PlayerTexture = await ATexture.LoadAsync("./images/Ship1.png");
         }
     }
 
@@ -43,15 +46,15 @@ export class Player extends A2DMeshModelPRSA {
      */
     static Create(transform?:NodeTransform2D, scale:number=1){
         transform = transform??NodeTransform2D.Identity();
-        if(!Player.LabCatFloatingHeadMaterial){
-            Player.LabCatFloatingHeadMaterial= GetAppState().CreateShaderMaterial(DefaultMaterials.TEXTURED2D_SHADER);
-            Player.LabCatFloatingHeadMaterial.setTexture("color", this.LabCatFloatingHeadTexture);
+        if(!Player.PlayerMaterial){
+            Player.PlayerMaterial= GetAppState().CreateShaderMaterial(DefaultMaterials.TEXTURED2D_SHADER);
+            Player.PlayerMaterial.setTexture("color", this.PlayerTexture);
         }
         let rval =  new Player(
             VertexArray2D.SquareXYUV(),
             transform,
         );
-        rval.setMaterial(Player.LabCatFloatingHeadMaterial);
+        rval.setMaterial(Player.PlayerMaterial);
         return rval;
     }
 
@@ -66,13 +69,18 @@ export class Player extends A2DMeshModelPRSA {
 
         // this.transform.scale = appState.getState("LabCatScale");
         this.transform.position = this.transform.position.plus(this.velocity);
+        if (this.velocity.x == 0){
+            this.smokeParticleSystem.setIsStill(true);
+        }
     }
 
     onMoveRight(){
         this.velocity.x = GameConfigs.PLAYER_MOVESPEED;
+        this.smokeParticleSystem.setSwayRight(false);
     }
     onMoveLeft(){
         this.velocity.x = -GameConfigs.PLAYER_MOVESPEED
+        this.smokeParticleSystem.setSwayRight(true);
     }
     onMoveUp(){
         this.velocity.y = GameConfigs.PLAYER_MOVESPEED;
@@ -85,6 +93,17 @@ export class Player extends A2DMeshModelPRSA {
     }
     onHaltVertical(){
         this.velocity.y = 0;
+    }
+
+    makeParticleSystemChild(particleSystem:any){
+        if (particleSystem instanceof SmokeParticleSystemModel){
+            this.smokeParticleSystem = particleSystem;
+        }
+        let targetTransform = particleSystem.getWorldTransform();
+        let playerTransform = this.getWorldTransform();
+        let newTransform = playerTransform.getInverse().times(targetTransform);
+        this.addChild(particleSystem);
+        particleSystem.setTransform(newTransform);
     }
 
 }

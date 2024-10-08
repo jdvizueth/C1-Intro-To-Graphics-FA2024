@@ -1,30 +1,27 @@
-import {ASerializable, Color, GetAppState, V2, V3, Vec3} from "../../../../anigraph";
+import {ASerializable, V2} from "../../../../anigraph";
 import {
     Instanced2DParticleSystemModel
 } from "../../../../anigraph/starter/nodes/instancedParticlesSystem/Instanced2DParticleSystemModel";
-import {Flame2DParticle} from "./Flame2DParticle";
 import {AParticleEnums} from "../../../../anigraph/physics/particles/AParticleEnums";
-import {GameConfigs} from "../../FleetFighterGameConfigs";
-import {CustomSVGModel} from "../CustomSVGModel";
+import {Smoke2DParticle} from "./Smoke2DParticle";
 
-@ASerializable("FireParticleSystemModel")
-export class FireParticleSystemModel extends Instanced2DParticleSystemModel<Flame2DParticle>{
-    hiddenParticles: Flame2DParticle[] = [];
-    activeParticles: Flame2DParticle[] = [];
-    spawnTimerLength: number = .05;
+@ASerializable("SmokeParticleSystemModel")
+export class SmokeParticleSystemModel extends Instanced2DParticleSystemModel<Smoke2DParticle> {
+    hiddenParticles: Smoke2DParticle[] = [];
+    activeParticles: Smoke2DParticle[] = [];
+    spawnTimerLength: number = .1;
     spawnTimerProgress: number = 0;
-    flameGrowth: number = 1;
-
+    smokeGrowth: number = 1;
+    windBounds: number = 1.5;
+    windX: number = 0;
+    swayRight = false;
+    windSpeed: number = 0.05;
+    isStill = true;
     /**
      * Particle system model for using instanced particles
      * "Instanced" graphics are ones where the same geometry is rendered many times, possibly with minor variations (e.g., in position and color). Each render of the object is an "instance". This is handled as a special case so that the program can share common data across the different instances, which helps scale up to a larger number of instances more efficiently. This makes it great for something like a particle system, where you have many copies of the same geometry.
      * Note that with instanced graphics, you need to specify the number of instances you plan to use up front so that we can allocate resources on the GPU to store whatever attributes vary between instances. This means that instead of creating new particles and destroying old ones as the application progresses, you will create a fixed budget of particles up front and simply hide any particles you aren't using. Then, when you want to "create" a new particle, you take one of the hidden particles, set its attributed, and un-hide it.
      */
-
-
-    // These are just keys for some simple app state properties we will control via sliders in this demo.
-    static ParticleOrbitKey = "ParticleOrbit"
-    static ParticleColorKey = "ParticleColor"
 
     /**
      * If you plan to simulate things with time steps, you are going to want to keep track of the last clock time when you updated so you can calculate how much time has passed between `timeUpdate(t)` calls
@@ -47,10 +44,11 @@ export class FireParticleSystemModel extends Instanced2DParticleSystemModel<Flam
 
         // Go through hidden list to see what to spawn
         if (this.spawnTimerProgress >= this.spawnTimerLength){
-            for (let i=0; i<10; i++){
+            let randomPosX = (Math.random()-0.5);
+            for (let i=0; i<2; i++){
                 if (this.hiddenParticles.length > 0){
-                    let particle: Flame2DParticle | undefined = this.hiddenParticles.pop(); // This flame particle const should never be called
-                    this.spawnParticle(particle);
+                    let particle: Smoke2DParticle | undefined = this.hiddenParticles.pop(); // This flame particle const should never be called
+                    this.spawnParticle(particle, randomPosX);
                 }
             }
             this.spawnTimerProgress = 0;
@@ -60,21 +58,23 @@ export class FireParticleSystemModel extends Instanced2DParticleSystemModel<Flam
         for(let p=0;p<this.nParticles;p++){
             if (this.particles[p].visible){
                 let particle = this.particles[p];
-
                 let amplitude = 0.2;
                 let frequency = 2;
 
-                particle.position.y -= .004*particle.speed*this.flameGrowth;
+                particle.position.y -= .004*particle.speed*this.smokeGrowth;
                 particle.position.x = particle.startPos.x + (amplitude * (Math.sin(frequency * time)));
 
                 let lifePercentage = particle.age / particle.lifeSpan;
+                particle.position.x += this.windX * lifePercentage;
+                // particle.position.x += 2 * lifePercentage;
+
+                this.updateWind(time);
 
                 // Update radius to get smaller with age
                 particle.radius = particle.iRadius * (1-lifePercentage);
 
-                // Update the color to shift to red with age
-                let spinAngle = (-60*(Math.PI/180)) * lifePercentage;
-                particle.color = particle.iColor.GetSpun(spinAngle);
+                // Update the color to shift lighter with age
+                particle.color = particle.iColor.GetDarkened(1 - (lifePercentage * 100));
 
                 // Kill particle once reached end of lifespan
                 if (particle.age >= particle.lifeSpan){
@@ -103,7 +103,7 @@ export class FireParticleSystemModel extends Instanced2DParticleSystemModel<Flam
         if(nParticles === undefined){nParticles = AParticleEnums.DEFAULT_MAX_N_PARTICLES;}
         for(let i=0;i<nParticles;i++){
             // create one particle
-            let newp = new Flame2DParticle();
+            let newp = new Smoke2DParticle();
 
             // set it to be not visible
             newp.visible=false;
@@ -117,11 +117,14 @@ export class FireParticleSystemModel extends Instanced2DParticleSystemModel<Flam
         this.signalParticlesUpdated();
     }
 
-    spawnParticle(p:Flame2DParticle | undefined){
+    spawnParticle(p:Smoke2DParticle | undefined, xPos:number){
         if (p !== undefined){
             // Reset position
             p.position = p.startPos.clone();
-            let randomPosX = (Math.random()-0.5) * 0.6;
+            // let randomPosX = (Math.random()-0.5) * 0.6;
+            // let randomPosX = (Math.random()-0.5);
+            let randomPosX = xPos;
+
             let startPosition = V2(randomPosX, 0);
             p.startPos = startPosition;
 
@@ -138,23 +141,43 @@ export class FireParticleSystemModel extends Instanced2DParticleSystemModel<Flam
 
     }
 
-    killParticle(p:Flame2DParticle){
+    killParticle(p:Smoke2DParticle){
         p.visible = false;
         this.activeParticles.pop();
         this.hiddenParticles.push(p);
     }
 
-    growFlame(){
-        this.flameGrowth = GameConfigs.FLAME_GROWTH;
+    updateWind(time:number){
+        // Update direction of wind
+        if (this.isStill){
+            if (this.windX > 0){
+                this.windX -= this.windSpeed*time;
+            }
+            else{
+                this.windX += this.windSpeed*time;
+            }
+        }
+        else if (this.swayRight){
+            if (this.windX < this.windBounds){
+                this.windX += this.windSpeed*time;
+            }
+        }
+        else{
+            if (this.windX > -this.windBounds){
+                this.windX -= this.windSpeed*time;
+            }
+        }
     }
 
-    shrinkFlame(){
-        this.flameGrowth = GameConfigs.FLAME_SHRINK;
+    setSwayRight(b:boolean){
+        this.isStill = false;
+        this.swayRight = b;
     }
 
-    stillFlame(){
-        this.flameGrowth = GameConfigs.FLAME_NORMAL;
+    setIsStill(b:boolean){
+        this.isStill = b;
     }
+
 
 }
 
