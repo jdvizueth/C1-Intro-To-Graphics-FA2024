@@ -3,22 +3,7 @@ import {Polygon2DModel} from "../../../../anigraph/starter/nodes/polygon2D";
 import {GameObject2DModel} from "../GameObject2DModel";
 
 /**
- * Customizable polygon node model.
- * We don't really change anything here, but are going to use it as a parent class for the Mat3 and NodeTransform2D specific node model subclasses below.
- */
-@ASerializable("CustomPolygon2DModel")
-export class CustomPolygon2DModel extends Polygon2DModel{
-    /**
-     * thr transform property type is Transformation2DInterface by default here.
-     * If we want to specialize it by explicitly making it a Mat3, or, more likely, by explicitly makingit a NodeTransform2D, then we can do that by overwriting some of its parent class methods with explicit types (see below)
-     */
-    clone(): CustomPolygon2DModel {
-        return new CustomPolygon2DModel(this.verts, this.transform);
-    }
-}
-
-/**
- * We can specialize a version that explicitly uses Mat3 objects to represent transformations
+ * The class Asteroid, extending from GameObject2DModel.
  */
 @ASerializable("Asteroid")
 export class Asteroid extends GameObject2DModel{
@@ -52,36 +37,6 @@ export class Asteroid extends GameObject2DModel{
 
     gotHit(): void {
         // console.log("GotHit");
-        this.setUniformColor( new Color(150,0,0,1))
-    }
-}
-
-/**
- * We can specialize a version that explicitly uses NodeTransform2D objects to represent transformations
- */
-@ASerializable("CustomPolygon2DPRSAModel")
-export class CustomPolygon2DPRSAModel extends CustomPolygon2DModel{
-    /**
-     * Wrapper that interprets the Transformation2DInterface as a NodeTransform2D
-     * @returns {NodeTransform2D}
-     */
-    get transform(): NodeTransform2D {
-        return this._transform as NodeTransform2D;
-    }
-
-    /**
-     * Sets the transform to an identity NodeTransform2D
-     */
-    setTransformToIdentity(){
-        this._transform = new NodeTransform2D();
-    }
-
-    /**
-     * If the input transform is not a NodeTransform2D, it will be converted to one before assignment.
-     * Note that this may have unpredictable behavior! The space of transformations we can represent with a matrix is larger than what we can represent with PRSA, so it may be impossible to match a given input matrix with a NodeTransform2D.
-     * @param transform
-     */
-    setTransform(transform:Transformation2DInterface){
-        return this.setTransformPRSA(transform);
+        this.setUniformColor(new Color(150,0,0,1))
     }
 }

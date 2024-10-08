@@ -278,25 +278,4 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             }
         }
     }
-    // timeUpdate(t: number) {
-    //     try {
-    //         console.log('something still happening')
-    //         for (let b of this.bullets) {
-    //             (b as ANodeModel).timeUpdate(t);
-    //             if (this.asteroid.getIntersectionsWith(b)){
-    //                 console.log('roll up');
-    //             }
-    //             // else {
-    //             //     this.mapOverDescendants((d) => {
-    //             //         (d as ANodeModel).timeUpdate(t);
-    //             //     })
-    //             // }
-    //         }
-    //     }catch(e) {
-    //         if(nErrors<1){
-    //                         console.error(e);
-    //                         nErrors+=1;
-    //                     }
-    //     }
-    // }
 }
