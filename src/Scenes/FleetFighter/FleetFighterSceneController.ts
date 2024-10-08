@@ -3,15 +3,20 @@ import {FleetFighterSceneModel} from "./FleetFighterSceneModel";
 import {Polygon2DModel, Polygon2DView} from "../../anigraph/starter/nodes/polygon2D";
 import {FireParticleSystemModel, FireParticleSystemView} from "./nodes";
 import {Player} from "./nodes/Player/Player";
+import {Bullet} from "./nodes/Bullet/Bullet";
+import {Asteroid} from "./nodes/Asteroid/Asteroids";
 import {
     A2DMeshView,
     ADragInteraction, AGLContext,
     AInteractionEvent,
     AKeyboardInteraction,
     ANodeModel,
-    ANodeView, ASVGView, Mat3, NodeTransform2D, NodeTransform3D, Vec2
+    ANodeView, ASVGView, Mat3, NodeTransform2D, NodeTransform3D, V3, Vec2
 } from "../../anigraph";
 import {CustomSVGModel} from "./nodes/CustomSVGModel";
+import {MyCustomModel} from "../MainScene/nodes";
+import {TexturedPolygon2DView} from "../../anigraph/starter/nodes/textured";
+import {BulletView} from "./nodes/Bullet/BulletView";
 
 export class FleetFighterSceneController extends App2DSceneController{
     get model():FleetFighterSceneModel{
@@ -44,6 +49,8 @@ export class FleetFighterSceneController extends App2DSceneController{
         this.addModelViewSpec(FireParticleSystemModel, FireParticleSystemView);
         this.addModelViewSpec(Player, A2DMeshView);
         this.addModelViewSpec(CustomSVGModel, ASVGView);
+        this.addModelViewSpec(Bullet, TexturedPolygon2DView);
+        this.addModelViewSpec(Asteroid, Polygon2DView);
     }
 
     /**
@@ -97,6 +104,17 @@ export class FleetFighterSceneController extends App2DSceneController{
                     if (keysDownState['s']) {
                         this.model.player.onMoveDown();
                         this.model.particleSystem.shrinkFlame();
+                    }
+                    if (keysDownState[' ']) {
+                        console.log("clicked spacebar");
+                        let currBullet = this.model.bullets.pop();
+                        if (currBullet) {
+                                this.model.addChild(currBullet);
+                                // currBullet.setPosition(this.model.player.transform.position);
+                                currBullet.transform.setPosition(this.model.player.transform.getPosition());
+                                currBullet.onMoveUp();
+                                this.model.bulletsUsed.push(currBullet);
+                        }
                     }
                     if(event.key == "C"){
                     }
