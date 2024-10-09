@@ -91,7 +91,6 @@ export class FleetFighterSceneController extends App2DSceneController{
                      */
                     let keysDownState = self.getKeysDownState();
                     if (keysDownState['d']) {
-
                         this.model.player.onMoveRight();
                     }
                     if (keysDownState['a']) {

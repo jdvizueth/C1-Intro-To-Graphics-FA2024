@@ -248,7 +248,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                     this.bulletsUsed.splice(i, 1);
                     i--;
                     b.speed = 0;
-                    // b.hasCollided = false;
                     break;
                 }
             }

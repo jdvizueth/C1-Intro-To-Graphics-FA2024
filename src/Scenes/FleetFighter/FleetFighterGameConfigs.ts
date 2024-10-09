@@ -13,5 +13,5 @@ export class GameConfigs{
     static FLAME_SHRINK = 0.4;
 
     static BULLET_MOVESPEED = 0.1;
-    static nBULLET = 1;
+    static nBULLET = 5;
 }
