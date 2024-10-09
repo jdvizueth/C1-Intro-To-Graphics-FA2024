@@ -3,12 +3,13 @@ import {FireParticleSystemModel} from "./nodes";
 import {Player} from "./nodes/Player/Player";
 import {Meteoroid} from "./nodes/Meteoroid/Meteoroid";
 import {
+    AMaterial,
     AMaterialManager,
     ANodeModel,
-    AppState,
+    AppState, ATexture,
     Color,
     DefaultMaterials,
-    GetAppState,
+    GetAppState, Mat3, Mat4, Polygon2D,
     SVGAsset,
     V2, V3
 } from "../../anigraph";
@@ -17,6 +18,11 @@ import {CustomSVGModel} from "./nodes/CustomSVGModel";
 import {BackgroundParticleSystemModel} from "./nodes/BackgroundParticleSystem";
 import {SmokeParticleSystemModel} from "./nodes/FlameParticleSystem/SmokeParticleSystemModel";
 
+import {Bullet} from "./nodes/Bullet/Bullet";
+import {GameConfigs} from "./FleetFighterGameConfigs";
+import {Asteroid} from "./nodes/Asteroid/Asteroids";
+import {Texture} from "three";
+import {GameObject2DModel} from "./nodes/GameObject2DModel";
 
 let nErrors = 0;
 export class FleetFighterSceneModel extends App2DSceneModel{
@@ -36,6 +42,38 @@ export class FleetFighterSceneModel extends App2DSceneModel{
 
     player!:Player;
     meteoroids:Meteoroid[] = [];
+
+
+    /**
+     * The bullets used to hit spaceships and such, for now Lab Cat will be the bullet but we can change that later
+     * @type {Bullet[]}
+     */
+        // bullet!:Bullet;
+    bullets: Bullet[] = [];
+
+    bulletsUsed: Bullet[] = [];
+
+    bulletTexture!:ATexture;
+
+    /**
+     * Lab Cat vector asset. Also a floating head.
+     * @type {SVGAsset}
+     */
+    labCatSVG!:SVGAsset;
+    labCatVectorHead!:CustomSVGModel;
+
+
+    /**
+     * Asteroid stuff
+     * @type {Polygon2DModel[]}
+     */
+    asteroids: Asteroid[] = [];
+
+    /**
+     * Material for asteroids
+     * @type {AMaterial}
+     */
+    asteroidMaterial!:AMaterial;
 
 
     /**
@@ -71,6 +109,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         // this.labCatSVG = await SVGAsset.Load("./images/svg/LabCatVectorHead.svg");
         await Player.PreloadAssets();
         await Meteoroid.PreloadAssets();
+        this.bulletTexture = await ATexture.LoadAsync("./images/LabCatFloatingHeadSmall.png")
     }
 
     /**
@@ -88,9 +127,32 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         let appState = GetAppState();
 
         // Create an instance of the player
+        //More asteroid stuff
+        this.asteroidMaterial = appState.CreateMaterial(DefaultMaterials.RGBA_SHADER);
+
+
+        // Create an instance of Lab Cat's floating head. Not as cool as the real Lab Cat, but still pretty cool.
         this.player = Player.Create();
         // The geometry itself is a unit square that ranges from -0.5 to 0.5 in x and y. Let's scale it up x2.5.
         this.player.transform.scale = 2.5;
+
+        // this.bullet = Bullet.Create();
+        // this.bullet.transform.scale = 1;
+        this.bullets = [];
+        for (let i = 0; i < GameConfigs.nBULLET; i++) {
+            let newBullet = new Bullet(Polygon2D.Square(), Mat3.Translation2D([0,0]),
+                Mat4.From2DMat3(
+                    Mat3.Translation2D(V2(0.5,0.5)).times(
+                        Mat3.Scale2D(0.5)
+                    )
+                ));
+            newBullet.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
+            newBullet.setTexture(this.bulletTexture);
+            // newBullet.transform.scale = 1;
+            this.bullets.push(newBullet);
+        }
+
+        // Lab Cat on the scene. Or in the scene, I guess... Either way, this will cause the controller to make a view.
         this.addChild(this.player);
 
         // Create meteoroids
@@ -99,6 +161,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         // this.addChild(this.meteoroids[0]);
         this.meteoroids[0].transform.scale = 3.5;
 
+        // this.addChild(this.bullet);
 
         // Lab Cat on the scene... again!
         // this.labCatVectorHead = new CustomSVGModel(this.labCatSVG);
@@ -142,6 +205,12 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.fireParticleSystem.zValue = -0.01;
 
 
+        // let targetTransform = this.particleSystem.getWorldTransform();
+        // let playerTransform = this.player.getWorldTransform();
+        // let newTransform = playerTransform.getInverse().times(targetTransform);
+        // this.player.addChild(this.particleSystem);
+        // this.particleSystem.setTransform(newTransform);
+        // this.particleSystem.transform.setPosition(V3(0,-.2,0));
         /** By default, objects are placed at a depth of 0. If you don't change this, then child objects will render on top of parents, and objects added to the scene later will be rendered on top of objects you added earlier. If you want to change this behavior, you can set the zValue of an object. The depth of an object will be the sum of zValues along the path that leads from its scene graph node to world space. Objects with higher depth values will be rendered on top of objects with lower depth values. Note that any depth value outside the scene's depth range will not be rendered. The depth range is [this.cameraModel.camera.zNear, this.cameraModel.camera.zFar] (defaults to [-5,5] at time of writing in 2024...)
          */
 
@@ -152,6 +221,24 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.starParticleSystem = new BackgroundParticleSystemModel(colorM, 4, 1.5, 0.1, 0.4, 0.25);
         maxNumParticles = 25;
         this.starParticleSystem.initParticles(maxNumParticles)
+        // More Asteroid Stuff
+        function createSpikyGeometry(k:number, spikiness:number=0, color:Color){
+            let polygon = Polygon2D.CreateForRendering() // default is hasColors=true, hasTextureCoords=false
+            // color = color??appState.getState("ColorValue1");
+            let spikeScale = 1-spikiness;
+            for(let v=0;v<k;v++){
+                let theta_step = -2*Math.PI/k; // The sign matters here!
+                let theta = v*theta_step;
+                let thetab = (v+0.5)*theta_step;
+                polygon.addVertex(V2(Math.cos(theta), Math.sin(theta)), color);
+                polygon.addVertex(V2(Math.cos(thetab), Math.sin(thetab)).times(spikeScale), color);
+            }
+            return polygon;
+        }
+        let newAsteroid = new Asteroid(createSpikyGeometry(4, 0, new Color(0,150,150,1)));
+        newAsteroid.setMaterial(this.asteroidMaterial);
+        // newAsteroid.transform.setPosition(this.player.transform.getPosition());
+        newAsteroid.transform.setPosition(V3(-11,5,0));
 
         let smallStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
         smallStarParticleMaterial.setUniform("opacityInMatrix", true);
@@ -159,6 +246,14 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.starParticleSystem.setMaterial(smallStarParticleMaterial)
         this.starParticleSystem.zValue = -0.01;
         this.addChild(this.starParticleSystem);
+        for (let i=0;i<6; i++) {
+            let asteroidCopy = new Asteroid(createSpikyGeometry(4, 0, new Color(0,150,150,1)));
+            asteroidCopy.setMaterial(this.asteroidMaterial);
+            asteroidCopy.transform.setPosition(newAsteroid.transform.getPosition().plus(V3(3,0,0)));
+            this.addChild(asteroidCopy);
+            this.asteroids.push(asteroidCopy);
+            newAsteroid = asteroidCopy;
+        }
 
         // Small stars
         this.star2ParticleSystem = new BackgroundParticleSystemModel(Color.White(), 1.5, 0.5, 0.1, 0.5);
@@ -195,6 +290,28 @@ export class FleetFighterSceneModel extends App2DSceneModel{
 
     }
 
+    // Helper Functions ----------------------------------------------------
+    checkAsteroidCollision(){
+        for (let i = 0; i < this.bulletsUsed.length; i++) {
+            let b = this.bulletsUsed[i];
+            for (let a of this.asteroids) {
+                let intersection = b.getIntersectionsWith(a);
+                if (intersection.length > 0){
+                    a.gotHit();
+                    b.hasCollided = true;
+
+                    b.parent?.removeChild(b);
+                    this.bullets.push(b);
+                    this.bulletsUsed.splice(i, 1);
+                    i--;
+                    b.speed = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+
 
     /**
      * Our time update function.
@@ -208,8 +325,10 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             // for (let i = 0; i < this.meteoroids.length; i++){
             //     this.meteoroids[i].timeUpdate(t);
             // }
+            // console.log(this.bulletsUsed)
             this.mapOverDescendants((d)=>{
                 (d as ANodeModel).timeUpdate(t);
+                this.checkAsteroidCollision();
             })
         }catch(e) {
             if(nErrors<1){
