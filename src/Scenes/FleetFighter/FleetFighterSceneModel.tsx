@@ -37,6 +37,9 @@ export class FleetFighterSceneModel extends App2DSceneModel{
     player!:Player;
     meteoroids:Meteoroid[] = [];
 
+    // UI Assets
+
+
 
     /**
      * This will add variables to the control pannel
@@ -67,6 +70,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         await this.loadTexture( "./images/fireParticle2.png", "GaussianSplat")
         await this.loadTexture( "./images/SmallStar.png", "SmallStar")
         await this.loadTexture( "./images/MedStar.png", "MedStar")
+        await this.loadTexture( "./images/whiteBorder.png", "border")
         // await this.loadTexture( "./images/SmMeteroid.png", "Meteroid")
         // this.labCatSVG = await SVGAsset.Load("./images/svg/LabCatVectorHead.svg");
         await Player.PreloadAssets();
@@ -98,6 +102,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.meteoroids.push(Meteoroid.Create());
         // this.addChild(this.meteoroids[0]);
         this.meteoroids[0].transform.scale = 3.5;
+
 
 
         // Lab Cat on the scene... again!
@@ -149,7 +154,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
 
         // Medium-sized stars
         let colorM = Color.Red().GetSpun(Math.PI);
-        this.starParticleSystem = new BackgroundParticleSystemModel(colorM, 4, 1.5, 0.1, 0.4, 0.25);
+        this.starParticleSystem = new BackgroundParticleSystemModel(colorM, 4, 1, 0.1, 0.4, 0.25);
         maxNumParticles = 25;
         this.starParticleSystem.initParticles(maxNumParticles)
 
@@ -173,7 +178,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         let largeStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
         let colorL = new Color(255,255,0,1);
         // colorL = colorL.GetSpun(4);
-        this.star3ParticleSystem = new BackgroundParticleSystemModel(colorL, 6, 2.5, 0.1, 0.3, 0.1);
+        this.star3ParticleSystem = new BackgroundParticleSystemModel(colorL, 4.5, 1.5, 0.1, 0.3, 0.1);
         maxNumParticles = 3;
         this.star3ParticleSystem.initParticles(maxNumParticles)
         largeStarParticleMaterial.setTexture("color", this.getTexture("MedStar"));
