@@ -15,7 +15,6 @@ import {callLabCatForth, labCatGoesIntoHiding, LabCatModel, LabCatView} from "./
 import {App2DSceneController} from "../../anigraph/starter/App2D/App2DSceneController";
 import {ASceneInteractionMode} from "../../anigraph/starter";
 import {GameChatacter2DModel} from "./nodes/GameChatacter2DModel";
-
 export class CatamariSceneController extends App2DSceneController{
     mainInteractionMode!:ASceneInteractionMode;
     get model():CatamariSceneModel{

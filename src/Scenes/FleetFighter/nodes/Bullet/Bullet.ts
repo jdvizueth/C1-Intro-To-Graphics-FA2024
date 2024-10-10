@@ -11,6 +11,7 @@ import {GameConfigs} from "../../FleetFighterGameConfigs";
 import {Polygon2DModel} from "../../../../anigraph/starter/nodes/polygon2D";
 import {GameObject2DModel} from "../GameObject2DModel";
 import {TexturedPolygon2DModel} from "../../../../anigraph/starter/nodes/textured";
+import {Collision} from "../Collision";
 
 const DefaultTextureMatrix = Mat3.Translation2D(V2(0.5,0.5)).times(Mat3.Scale2D(5.2))
 
@@ -23,6 +24,7 @@ export class Bullet extends GameObject2DModel {
     _currentDestination:Vec2;
     // _orientation:Vec2;
     speed = 0;
+    collisionCircle: Collision | null = null;
     hasCollided: boolean=false;
 
 

@@ -1,12 +1,14 @@
 import {ASerializable, Color, Mat3, NodeTransform2D, Transformation2DInterface} from "../../../../anigraph";
 import {Polygon2DModel} from "../../../../anigraph/starter/nodes/polygon2D";
 import {GameObject2DModel} from "../GameObject2DModel";
+import {Collision} from "../Collision";
 
 /**
  * The class Asteroid, extending from GameObject2DModel.
  */
 @ASerializable("Asteroid")
 export class Asteroid extends GameObject2DModel{
+    collisionCircle: Collision | null = null;
     /**
      * Wrapper that interprets the Transformation2DInterface as a Mat3
      * @returns {Mat3}

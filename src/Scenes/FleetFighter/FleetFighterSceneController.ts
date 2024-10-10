@@ -11,7 +11,7 @@ import {
     AInteractionEvent,
     AKeyboardInteraction,
     ANodeModel,
-    ANodeView, ASVGView, Mat3, NodeTransform2D, NodeTransform3D, V3, Vec2
+    ANodeView, AObject, ASVGView, AView, Mat3, NodeTransform2D, NodeTransform3D, V3, Vec2
 } from "../../anigraph";
 import {CustomSVGModel} from "./nodes/CustomSVGModel";
 import {MyCustomModel, MyCustomView} from "../MainScene/nodes";
@@ -20,7 +20,8 @@ import {Meteoroid} from "./nodes/Meteoroid/Meteoroid";
 import {SmokeParticleSystemModel} from "./nodes/FlameParticleSystem/SmokeParticleSystemModel";
 import {TexturedPolygon2DView} from "../../anigraph/starter/nodes/textured";
 import {BulletView} from "./nodes/Bullet/BulletView";
-
+import {CollisionView} from "./nodes/CollisionView";
+import {Collision} from "./nodes/Collision";
 export class FleetFighterSceneController extends App2DSceneController{
     prevKeyW: boolean = false;
     prevKeyS: boolean = false;
@@ -60,6 +61,8 @@ export class FleetFighterSceneController extends App2DSceneController{
         this.addModelViewSpec(CustomSVGModel, ASVGView);
         this.addModelViewSpec(Bullet, TexturedPolygon2DView);
         this.addModelViewSpec(Asteroid, Polygon2DView);
+        // this.addModelViewSpec(CollisionModel, CollisionView);
+        this.addModelViewSpec(Collision, CollisionView)
     }
 
     /**
@@ -132,6 +135,7 @@ export class FleetFighterSceneController extends App2DSceneController{
                     }
                     if (keysDownState[' ']) {
                         console.log("clicked spacebar");
+                        event.preventDefault();
                         let currBullet = this.model.bullets.pop();
                         if (currBullet) {
                                 this.model.addChild(currBullet);

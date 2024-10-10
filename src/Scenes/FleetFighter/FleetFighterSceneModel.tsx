@@ -1,4 +1,4 @@
-import { App2DSceneModel } from "anigraph/starter/App2D/App2DSceneModel";
+import {App2DSceneModel} from "anigraph/starter/App2D/App2DSceneModel";
 import {FireParticleSystemModel} from "./nodes";
 import {Player} from "./nodes/Player/Player";
 import {Meteoroid} from "./nodes/Meteoroid/Meteoroid";
@@ -6,12 +6,17 @@ import {
     AMaterial,
     AMaterialManager,
     ANodeModel,
-    AppState, ATexture,
+    AppState,
+    ATexture,
     Color,
     DefaultMaterials,
-    GetAppState, Mat3, Mat4, Polygon2D,
+    GetAppState,
+    Mat3,
+    Mat4,
+    Polygon2D,
     SVGAsset,
-    V2, V3
+    V2,
+    V3
 } from "../../anigraph";
 import React from "react";
 import {CustomSVGModel} from "./nodes/CustomSVGModel";
@@ -21,8 +26,8 @@ import {SmokeParticleSystemModel} from "./nodes/FlameParticleSystem/SmokeParticl
 import {Bullet} from "./nodes/Bullet/Bullet";
 import {GameConfigs} from "./FleetFighterGameConfigs";
 import {Asteroid} from "./nodes/Asteroid/Asteroids";
-import {Texture} from "three";
-import {GameObject2DModel} from "./nodes/GameObject2DModel";
+import {Collision, collisionType} from "./nodes/Collision";
+// import {collisionType} from "./nodes/CollisionModel";
 
 let nErrors = 0;
 export class FleetFighterSceneModel extends App2DSceneModel{
@@ -148,6 +153,10 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                 ));
             newBullet.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
             newBullet.setTexture(this.bulletTexture);
+            let currCircle = new Collision(1, collisionType.bullet);
+            currCircle.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
+            newBullet.collisionCircle = currCircle;
+            newBullet.addChild(currCircle);
             // newBullet.transform.scale = 1;
             this.bullets.push(newBullet);
         }
@@ -250,6 +259,11 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             let asteroidCopy = new Asteroid(createSpikyGeometry(4, 0, new Color(0,150,150,1)));
             asteroidCopy.setMaterial(this.asteroidMaterial);
             asteroidCopy.transform.setPosition(newAsteroid.transform.getPosition().plus(V3(3,0,0)));
+            // asteroidCopy.addChild(new Collision(3, collisionType.asteroid));
+            let currCircle = new Collision(1, collisionType.bullet);
+            currCircle.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
+            asteroidCopy.collisionCircle = currCircle;
+            asteroidCopy.addChild(currCircle);
             this.addChild(asteroidCopy);
             this.asteroids.push(asteroidCopy);
             newAsteroid = asteroidCopy;
@@ -291,12 +305,32 @@ export class FleetFighterSceneModel extends App2DSceneModel{
     }
 
     // Helper Functions ----------------------------------------------------
+    // checkAsteroidCollision(){
+    //     for (let i = 0; i < this.bulletsUsed.length; i++) {
+    //         let b = this.bulletsUsed[i];
+    //         for (let a of this.asteroids) {
+    //             let intersection = b.getIntersectionsWith(a);
+    //             if (intersection.length > 0){
+    //                 a.gotHit();
+    //                 b.hasCollided = true;
+    //
+    //                 b.parent?.removeChild(b);
+    //                 this.bullets.push(b);
+    //                 this.bulletsUsed.splice(i, 1);
+    //                 i--;
+    //                 b.speed = 0;
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
     checkAsteroidCollision(){
-        for (let i = 0; i < this.bulletsUsed.length; i++) {
+        for (let i=0;i<this.bulletsUsed.length;i++){
             let b = this.bulletsUsed[i];
             for (let a of this.asteroids) {
-                let intersection = b.getIntersectionsWith(a);
-                if (intersection.length > 0){
+                // console.log('at least it goes through the loop');
+                if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
+                    console.log('it actually works!')
                     a.gotHit();
                     b.hasCollided = true;
 
