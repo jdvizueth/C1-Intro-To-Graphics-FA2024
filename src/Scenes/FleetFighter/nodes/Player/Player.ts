@@ -1,5 +1,5 @@
 import {
-    A2DMeshModelPRSA,
+    A2DMeshModelPRSA, AMaterialManager,
     ASerializable,
     AShaderMaterial, ATexture, DefaultMaterials, GetAppState,
     NodeTransform2D,
@@ -9,6 +9,7 @@ import {
 } from "../../../../anigraph";
 import {GameConfigs} from "../../FleetFighterGameConfigs";
 import {SmokeParticleSystemModel} from "../FlameParticleSystem/SmokeParticleSystemModel";
+import {Collision, collisionType} from "../Collision";
 
 @ASerializable("Player")
 export class Player extends A2DMeshModelPRSA {
@@ -19,6 +20,7 @@ export class Player extends A2DMeshModelPRSA {
     speed:number=0.1;
     smokeParticleSystem!:SmokeParticleSystemModel;
     windDirection:number = 1;
+    collisionCircle: Collision | null = null;
 
 
     constructor(verts?:VertexArray2D, transform?:NodeTransform2D, ...args:any[]) {
@@ -55,6 +57,7 @@ export class Player extends A2DMeshModelPRSA {
             transform,
         );
         rval.setMaterial(Player.PlayerMaterial);
+
         return rval;
     }
 
@@ -104,6 +107,11 @@ export class Player extends A2DMeshModelPRSA {
         let newTransform = playerTransform.getInverse().times(targetTransform);
         this.addChild(particleSystem);
         particleSystem.setTransform(newTransform);
+    }
+
+    gotHit(): void {
+        // console.log("GotHit");
+        // this.transform.scale = 1;
     }
 
 }

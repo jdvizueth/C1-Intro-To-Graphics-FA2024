@@ -4,7 +4,7 @@ import {Polygon2DModel, Polygon2DView} from "../../anigraph/starter/nodes/polygo
 import {FireParticleSystemModel, ParticleSystemView} from "./nodes";
 import {Player} from "./nodes/Player/Player";
 import {Bullet} from "./nodes/Bullet/Bullet";
-import {Asteroid} from "./nodes/Asteroid/Asteroids";
+import {Asteroid} from "./nodes/Asteroid/Asteroid";
 import {
     A2DMeshView,
     ADragInteraction, AGLContext,

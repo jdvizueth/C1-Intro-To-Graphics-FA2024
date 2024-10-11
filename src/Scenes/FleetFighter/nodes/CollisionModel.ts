@@ -3,6 +3,7 @@ import {
     ANodeModel,
     AObjectNode,
     AShaderMaterial, ATexture,
+    Color,
     TransformationInterface,
     Vec2,
     Vec3,
@@ -34,6 +35,9 @@ export class CollisionModel extends Polygon2DModel {
         this.localPositionX = localPositionX;
         this.localPositionY = localPositionY;
         this.collisionType = collisionType;
+        this.visible = true;
+        this.zValue = 0.1;
+        this.setUniformColor(Color.Red());
     }
 
     // isCollidingWithWorld(otherCircle: CollisionModel): boolean {
