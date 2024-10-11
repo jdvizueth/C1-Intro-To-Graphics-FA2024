@@ -357,6 +357,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                     // console.log('it actually works!')
                     // a.gotHit();
                     let parent:Asteroid|null = this.findParent(a);
+                    // console.log(parent);
                     if (parent != null){
                         parent.unClump(this);
                     }
@@ -373,7 +374,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             }
             // Check for asteroid collisions
             for (let a2 of this.asteroidsActive) {
-                if (a != a2 && !a.isChild && !a2.isChild && !a2.hasUnclumped){
+                if (a != a2 && !a.isChild && !a2.isChild && !a2.hasUnclumped && !a.hasUnclumped){
                     if (a2.collisionCircle && a.collisionCircle && a2.collisionCircle.isCollidingWith(a2.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
                         // Reparent a2 to a and clump them
                         let targetTransform = a2.getWorldTransform();

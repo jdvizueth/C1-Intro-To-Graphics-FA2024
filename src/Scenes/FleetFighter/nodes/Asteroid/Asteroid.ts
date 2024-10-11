@@ -118,13 +118,17 @@ export class Asteroid extends A2DMeshModelPRSA {
     unClump(scene:FleetFighterSceneModel, transformMatrix?:Mat3){
         let parentToWorld: Mat3;
         if (transformMatrix) {
-            parentToWorld = this.transform.getMatrix().times(transformMatrix);
+            // parentToWorld = this.transform.getMatrix().times(transformMatrix);
+            parentToWorld = transformMatrix.times(this.transform.getMatrix());
         }
         else {
             parentToWorld = this.transform.getMatrix();
         }
+        // this.reparent(scene);
+        this.parent?.removeChild(this);
+        scene.addChild(this);
         this.setTransformMat3(parentToWorld);
-        this.reparent(scene);
+
         this.isChild = false;
         this.hasUnclumped = true;
         for (let i = 0; i < this.children.length; i++){
