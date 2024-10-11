@@ -347,11 +347,11 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             for (let i=0;i<this.bulletsUsed.length;i++) {
                 let b = this.bulletsUsed[i];
                 // Check for bullet out of range
-                // if (b.transform.getPosition().y > 11){
-                //     b.parent?.removeChild(b);
-                //     this.bullets.push(b);
-                //     this.bulletsUsed.splice(i, 1);
-                // }
+                if (b.transform.getPosition().y > 11){
+                    b.parent?.removeChild(b);
+                    this.bullets.push(b);
+                    this.bulletsUsed.splice(i, 1);
+                }
                 // console.log('at least it goes through the loop');
                 if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
                     // console.log('it actually works!')
@@ -387,7 +387,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                 this.asteroidsActive = this.asteroidsActive.filter(obj => obj !== a);
                 this.asteroidsHidden.push(a);
                 a.unClump(this);
-                // a.reparent(this);
             }
         }
     }
@@ -404,7 +403,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             // individual `timeUpdate` functions for each model. If you don't have many interactions between models you
             // can usually implement most of your scene logic this way
             // this.checkAsteroidCollision();
-
+            this.checkAsteroidCollision();
             // Update asteroid spawn timer
             let dt = t - this.prevTime;
             this.asteroidSpawnTimer += dt;
@@ -421,7 +420,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             }
             this.mapOverDescendants((d)=>{
                 (d as ANodeModel).timeUpdate(t);
-                this.checkAsteroidCollision();
             })
         }catch(e) {
             if(nErrors<1){
