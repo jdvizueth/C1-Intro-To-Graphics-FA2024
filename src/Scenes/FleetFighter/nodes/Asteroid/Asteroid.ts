@@ -9,6 +9,8 @@ import {
 } from "../../../../anigraph";
 import {GameConfigs} from "../../FleetFighterGameConfigs";
 import {Collision} from "../Collision";
+import {SmokeParticleSystemModel} from "../FlameParticleSystem/SmokeParticleSystemModel";
+import {FleetFighterSceneModel} from "../../FleetFighterSceneModel";
 
 @ASerializable("Asteroid")
 export class Asteroid extends A2DMeshModelPRSA {
@@ -16,7 +18,7 @@ export class Asteroid extends A2DMeshModelPRSA {
     static asteroidTexture:ATexture;
 
     velocity:Vec2;
-    speed:number=2;
+    speed:number=10;
     rotationSpeed = 0.1;
 
     collisionCircle: Collision | null = null;
@@ -104,13 +106,30 @@ export class Asteroid extends A2DMeshModelPRSA {
     }
 
     checkDespawn() {
-        if (this.transform.getPosition().y <= -11) {
+        if (this.transform.getPosition().y <= -11 && !this.isChild) {
             this.shouldDespawn = true;
+            // this.transform.scale = .5;
         }
-        // unclump everything
+        // unclump everything - once clumped should no longer clump anymore
     }
 
-    unClump(){
-        // if(typeof this.parent  == )
+    unClump(scene:FleetFighterSceneModel, transformMatrix?:Mat3){
+        let parentToWorld: Mat3;
+        if (transformMatrix) {
+            parentToWorld = this.transform.getMatrix().times(transformMatrix);
+        }
+        else {
+            parentToWorld = this.transform.getMatrix();
+        }
+        this.setTransformMat3(parentToWorld);
+        this.reparent(scene);
+        this.isChild = false;
+        for (let i = 0; i < this.children.length; i++){
+            let child = this.children[i];
+            if (child instanceof Asteroid){
+                child.unClump(scene, parentToWorld);
+            }
+
+        }
     }
 }

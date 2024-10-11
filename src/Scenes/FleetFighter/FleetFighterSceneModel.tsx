@@ -346,6 +346,12 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             // Check for bullet collisions
             for (let i=0;i<this.bulletsUsed.length;i++) {
                 let b = this.bulletsUsed[i];
+                // Check for bullet out of range
+                // if (b.transform.getPosition().y > 11){
+                //     b.parent?.removeChild(b);
+                //     this.bullets.push(b);
+                //     this.bulletsUsed.splice(i, 1);
+                // }
                 // console.log('at least it goes through the loop');
                 if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
                     // console.log('it actually works!')
@@ -380,6 +386,8 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             if (a.shouldDespawn){
                 this.asteroidsActive = this.asteroidsActive.filter(obj => obj !== a);
                 this.asteroidsHidden.push(a);
+                a.unClump(this);
+                // a.reparent(this);
             }
         }
     }
