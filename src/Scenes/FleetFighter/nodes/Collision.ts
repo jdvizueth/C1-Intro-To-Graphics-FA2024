@@ -57,7 +57,6 @@ export class Collision extends GameObject2DModel {
         const squaredDistance = dx * dx + dy * dy;
         const squaredRadiusSum = (this.radius + otherCircle.radius) * (this.radius + otherCircle.radius);
 
-        console.log('passes in isCollidingWith');
         if (squaredDistance <= squaredRadiusSum) {
             return otherCircle.collisionType;
         }

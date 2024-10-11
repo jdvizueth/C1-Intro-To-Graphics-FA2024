@@ -26,6 +26,8 @@ export class Asteroid extends A2DMeshModelPRSA {
     prevTime:number = 0;
     isChild:boolean = false;
 
+    hasUnclumped:boolean = false;
+
 
     constructor(verts?:VertexArray2D, transform?:NodeTransform2D, ...args:any[]) {
         if(Asteroid.asteroidMaterial === undefined){
@@ -93,9 +95,9 @@ export class Asteroid extends A2DMeshModelPRSA {
     }
 
     gotHit(): void {
-        // console.log("GotHit");
-        // this.setUniformColor(new Color(150,0,0,1))
+        console.log("GotHit");
     }
+
 
     spawn(){
         this.shouldDespawn = false;
@@ -103,14 +105,14 @@ export class Asteroid extends A2DMeshModelPRSA {
         let randomPosX = Math.random() * 18 - 9;
         this.transform.setPosition(V3(randomPosX, yPos, 0));
         this.speed = Math.random() + 1;
+        this.hasUnclumped = false;
+
     }
 
     checkDespawn() {
         if (this.transform.getPosition().y <= -11 && !this.isChild) {
             this.shouldDespawn = true;
-            // this.transform.scale = .5;
         }
-        // unclump everything - once clumped should no longer clump anymore
     }
 
     unClump(scene:FleetFighterSceneModel, transformMatrix?:Mat3){
@@ -124,6 +126,7 @@ export class Asteroid extends A2DMeshModelPRSA {
         this.setTransformMat3(parentToWorld);
         this.reparent(scene);
         this.isChild = false;
+        this.hasUnclumped = true;
         for (let i = 0; i < this.children.length; i++){
             let child = this.children[i];
             if (child instanceof Asteroid){
