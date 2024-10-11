@@ -61,7 +61,6 @@ export class FleetFighterSceneController extends App2DSceneController{
         this.addModelViewSpec(CustomSVGModel, ASVGView);
         this.addModelViewSpec(Bullet, TexturedPolygon2DView);
         this.addModelViewSpec(Asteroid, Polygon2DView);
-        // this.addModelViewSpec(CollisionModel, CollisionView);
         this.addModelViewSpec(Collision, CollisionView)
     }
 
@@ -134,15 +133,17 @@ export class FleetFighterSceneController extends App2DSceneController{
                         }
                     }
                     if (keysDownState[' ']) {
-                        console.log("clicked spacebar");
-                        event.preventDefault();
-                        let currBullet = this.model.bullets.pop();
-                        if (currBullet) {
+                        if (this.model.activateSpacebar) {
+                            console.log("clicked spacebar");
+                            event.preventDefault();
+                            let currBullet = this.model.bullets.pop();
+                            if (currBullet) {
                                 this.model.addChild(currBullet);
-                                // currBullet.setPosition(this.model.player.transform.position);
                                 currBullet.transform.setPosition(this.model.player.transform.getPosition());
                                 currBullet.onMoveUp();
                                 this.model.bulletsUsed.push(currBullet);
+                                this.model.activateSpacebar = false;
+                            }
                         }
                     }
                     if(event.key == "C"){

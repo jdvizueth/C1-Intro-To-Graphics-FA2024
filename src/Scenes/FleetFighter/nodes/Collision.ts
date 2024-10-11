@@ -1,5 +1,5 @@
 import {
-    A2DMeshModelPRSA, ANodeModel, AObjectNode,
+    A2DMeshModelPRSA, AMaterialManager, ANodeModel, ANodeModel2D, AObjectNode, ASceneModel,
     ASerializable,
     AShaderMaterial, ATexture, DefaultMaterials, GetAppState, Mat3, Mat4,
     NodeTransform2D, Polygon2D,
@@ -9,6 +9,7 @@ import {
 } from "../../../anigraph";
 import {GameConfigs} from "../FleetFighterGameConfigs";
 import {GameObject2DModel} from "./GameObject2DModel";
+import {TexturedPolygon2DModel} from "../../../anigraph/starter/nodes/textured";
 
 export enum collisionType {
     ship = "ship",
@@ -19,7 +20,7 @@ export enum collisionType {
 const DefaultTextureMatrix = Mat3.Translation2D(V2(0.5,0.5)).times(Mat3.Scale2D(5.2))
 
 @ASerializable("Collision")
-export class Collision extends GameObject2DModel {
+export class Collision extends TexturedPolygon2DModel {
     static BulletMaterial:AShaderMaterial|undefined=undefined;
     static BulletTexture:ATexture;
 
@@ -29,6 +30,18 @@ export class Collision extends GameObject2DModel {
     collisionType:collisionType;
     // _currentDestination:Vec2;
 
+    /**
+     * Initiates a new Collision. Radius and collisionType must be defined. localPositionX and Y define the position the
+     * circle is in the current vector plane (parent); by default they are set to 0.
+     * @param radius
+     * @param collisionType
+     * @param localPositionX
+     * @param localPositionY
+     * @param verts
+     * @param transform
+     * @param textureMatrix
+     * @param args
+     */
     constructor(radius:number, collisionType: collisionType, localPositionX = 0, localPositionY = 0, verts?:Polygon2D, transform?:Mat3, textureMatrix?:Mat3|Mat4, ...args:any[]) {
         super(verts, transform, textureMatrix??DefaultTextureMatrix, ...args);
         this.radius = radius;
@@ -36,53 +49,46 @@ export class Collision extends GameObject2DModel {
         this.localPositionX = localPositionX;
         this.localPositionY = localPositionY;
         // this._currentDestination = new Vec2();
+        this.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
     }
 
     // isCollidingWith(parentCoords: Vec3, otherParentCoords: Vec3, otherCircle: Collision): collisionType | null {
     //     const dx = (parentCoords.x + this.localPositionX) - (otherParentCoords.x + otherCircle.localPositionX);
     //     const dy = (parentCoords.y + this.localPositionY) - (otherParentCoords.y + otherCircle.localPositionY);
-    //     const distance = Math.sqrt(dx * dx + dy * dy);
     //
-    //     // return distance <= (this.radius + otherCircle.radius);
-    //     console.log('passes in isCollidingWith');
-    //     if (distance <= (this.radius + otherCircle.radius)) {
+    //     const squaredDistance = dx * dx + dy * dy;
+    //     const squaredRadiusSum = (this.radius + otherCircle.radius) * (this.radius + otherCircle.radius);
+    //
+    //     // console.log('passes in isCollidingWith');
+    //     if (squaredDistance <= squaredRadiusSum) {
     //         return otherCircle.collisionType;
     //     }
     //     return null;
     // }
-    isCollidingWith(parentCoords: Vec3, otherParentCoords: Vec3, otherCircle: Collision): collisionType | null {
-        const dx = (parentCoords.x + this.localPositionX) - (otherParentCoords.x + otherCircle.localPositionX);
-        const dy = (parentCoords.y + this.localPositionY) - (otherParentCoords.y + otherCircle.localPositionY);
+    /**
+     * Checks if this Collision circle collides with another Collision type. If the two collide, returns the
+     * collisionType (ie asteroid, bullet, ship) from enum collisionType. Otherwise, return null.
+     * Collision circles must have parents and parents must be in the same vector plane (parents share the same parent).
+     * @param otherCircle
+     */
+    isCollidingWith(otherCircle: Collision): collisionType | null {
+        if (this.parent instanceof ANodeModel2D && otherCircle.parent instanceof ANodeModel2D) {
+            let parentCoords = this.parent.transform.getPosition();
+            let otherParentCoords = otherCircle.parent.transform.getPosition();
+            const dx = (parentCoords.x + this.localPositionX) - (otherParentCoords.x + otherCircle.localPositionX);
+            const dy = (parentCoords.y + this.localPositionY) - (otherParentCoords.y + otherCircle.localPositionY);
 
-        const squaredDistance = dx * dx + dy * dy;
-        const squaredRadiusSum = (this.radius + otherCircle.radius) * (this.radius + otherCircle.radius);
+            const squaredDistance = dx * dx + dy * dy;
+            const squaredRadiusSum = (this.radius + otherCircle.radius) * (this.radius + otherCircle.radius);
 
-        console.log('passes in isCollidingWith');
-        if (squaredDistance <= squaredRadiusSum) {
-            return otherCircle.collisionType;
+            if (squaredDistance <= squaredRadiusSum) {
+                return otherCircle.collisionType;
+            }
         }
         return null;
     }
 
-
-
     timeUpdate(t:number) {
-        // super.timeUpdate(t, ...args);
-        // let appState = GetAppState();
-        // appState.setState("LabCatScale", 5+Math.sin(t));
-
-        // Update the react component that displays this value
-        // appState.updateComponents()
-        // this.transform.scale = appState.getState("LabCatScale");
         super.timeUpdate(t);
-        // if (this.isLaunched) {
-        // this.transform.setPosition(this.transform.getPosition().plus(V3(0,this.speed,0)));
-        // console.log(this.transform.getPosition())
-        // if (this.hasCollided) {
-        //     console.log('bullet has collided')
-        //     // code that sends the bullet back to user
-        //     this.speed = 0;
-        //     this.hasCollided = false;
-        // }
     }
 }

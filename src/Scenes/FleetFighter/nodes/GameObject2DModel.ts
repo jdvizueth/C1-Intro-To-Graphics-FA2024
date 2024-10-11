@@ -1,9 +1,11 @@
 import {TexturedPolygon2DModel} from "../../../anigraph/starter/nodes/textured";
 import {Mat3, NodeTransform2D, TransformationInterface} from "../../../anigraph";
 import {Polygon2DModel} from "../../../anigraph/starter/nodes/polygon2D";
+import {Collision, collisionType} from "./Collision";
 
 export class GameObject2DModel extends TexturedPolygon2DModel{
     lastUpdateTime:number=0;
+    collisionCircle: Collision | null = null;
 
     /**
      * You could optionally force the class to use Mat3 or NodeTransform2D
@@ -74,6 +76,16 @@ export class GameObject2DModel extends TexturedPolygon2DModel{
 
     getWorldTransform(): Mat3 {
         return this.getWorldTransform2D();
+    }
+
+    /**
+     * Activates the collision circle for this object.
+     * @param radius
+     * @param collisionType
+     */
+    activateCircleCollisions(radius:number, collisionType: collisionType){
+        this.collisionCircle = new Collision(radius, collisionType);
+        this.addChild(this.collisionCircle);
     }
 
 }

@@ -1,14 +1,12 @@
-import {ASerializable, Color, Mat3, NodeTransform2D, Transformation2DInterface} from "../../../../anigraph";
-import {Polygon2DModel} from "../../../../anigraph/starter/nodes/polygon2D";
+import {ASerializable, Color, Mat3, Transformation2DInterface} from "../../../../anigraph";
 import {GameObject2DModel} from "../GameObject2DModel";
-import {Collision} from "../Collision";
+import {Collision, collisionType} from "../Collision";
 
 /**
  * The class Asteroid, extending from GameObject2DModel.
  */
 @ASerializable("Asteroid")
 export class Asteroid extends GameObject2DModel{
-    collisionCircle: Collision | null = null;
     /**
      * Wrapper that interprets the Transformation2DInterface as a Mat3
      * @returns {Mat3}
@@ -40,5 +38,13 @@ export class Asteroid extends GameObject2DModel{
     gotHit(): void {
         // console.log("GotHit");
         this.setUniformColor(new Color(150,0,0,1))
+    }
+
+    /**
+     * Activates the collision circle for this asteroid. By default, radius is 1.
+     * @param radius
+     */
+    activateCircleCollisions(radius: number = 1) {
+        super.activateCircleCollisions(radius, collisionType.asteroid);
     }
 }

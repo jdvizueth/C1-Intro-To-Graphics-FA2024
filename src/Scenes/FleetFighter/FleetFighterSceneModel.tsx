@@ -32,6 +32,9 @@ import {Collision, collisionType} from "./nodes/Collision";
 let nErrors = 0;
 export class FleetFighterSceneModel extends App2DSceneModel{
 
+    lastUpdateTime: number = 0;
+    activateSpacebar: boolean = true;
+
     /**
      * Our example particle system model. Note that if we are declaring some class instance attribute that may not be
      * initialized in the constructor, we need to put the "!" after its name to indicate that we intend to initialize it
@@ -53,7 +56,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
      * The bullets used to hit spaceships and such, for now Lab Cat will be the bullet but we can change that later
      * @type {Bullet[]}
      */
-        // bullet!:Bullet;
     bullets: Bullet[] = [];
 
     bulletsUsed: Bullet[] = [];
@@ -141,23 +143,11 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         // The geometry itself is a unit square that ranges from -0.5 to 0.5 in x and y. Let's scale it up x2.5.
         this.player.transform.scale = 2.5;
 
-        // this.bullet = Bullet.Create();
-        // this.bullet.transform.scale = 1;
         this.bullets = [];
         for (let i = 0; i < GameConfigs.nBULLET; i++) {
-            let newBullet = new Bullet(Polygon2D.Square(), Mat3.Translation2D([0,0]),
-                Mat4.From2DMat3(
-                    Mat3.Translation2D(V2(0.5,0.5)).times(
-                        Mat3.Scale2D(0.5)
-                    )
-                ));
-            newBullet.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
+            let newBullet = new Bullet();
             newBullet.setTexture(this.bulletTexture);
-            let currCircle = new Collision(1, collisionType.bullet);
-            currCircle.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
-            newBullet.collisionCircle = currCircle;
-            newBullet.addChild(currCircle);
-            // newBullet.transform.scale = 1;
+            newBullet.activateCircleCollisions();
             this.bullets.push(newBullet);
         }
 
@@ -246,7 +236,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         }
         let newAsteroid = new Asteroid(createSpikyGeometry(4, 0, new Color(0,150,150,1)));
         newAsteroid.setMaterial(this.asteroidMaterial);
-        // newAsteroid.transform.setPosition(this.player.transform.getPosition());
         newAsteroid.transform.setPosition(V3(-11,5,0));
 
         let smallStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
@@ -259,11 +248,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             let asteroidCopy = new Asteroid(createSpikyGeometry(4, 0, new Color(0,150,150,1)));
             asteroidCopy.setMaterial(this.asteroidMaterial);
             asteroidCopy.transform.setPosition(newAsteroid.transform.getPosition().plus(V3(3,0,0)));
-            // asteroidCopy.addChild(new Collision(3, collisionType.asteroid));
-            let currCircle = new Collision(1, collisionType.bullet);
-            currCircle.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
-            asteroidCopy.collisionCircle = currCircle;
-            asteroidCopy.addChild(currCircle);
+            asteroidCopy.activateCircleCollisions();
             this.addChild(asteroidCopy);
             this.asteroids.push(asteroidCopy);
             newAsteroid = asteroidCopy;
@@ -305,41 +290,32 @@ export class FleetFighterSceneModel extends App2DSceneModel{
     }
 
     // Helper Functions ----------------------------------------------------
-    // checkAsteroidCollision(){
-    //     for (let i = 0; i < this.bulletsUsed.length; i++) {
-    //         let b = this.bulletsUsed[i];
-    //         for (let a of this.asteroids) {
-    //             let intersection = b.getIntersectionsWith(a);
-    //             if (intersection.length > 0){
-    //                 a.gotHit();
-    //                 b.hasCollided = true;
-    //
-    //                 b.parent?.removeChild(b);
-    //                 this.bullets.push(b);
-    //                 this.bulletsUsed.splice(i, 1);
-    //                 i--;
-    //                 b.speed = 0;
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
-    checkAsteroidCollision(){
-        for (let i=0;i<this.bulletsUsed.length;i++){
-            let b = this.bulletsUsed[i];
-            for (let a of this.asteroids) {
-                // console.log('at least it goes through the loop');
-                if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
-                    console.log('it actually works!')
-                    a.gotHit();
-                    b.hasCollided = true;
 
-                    b.parent?.removeChild(b);
-                    this.bullets.push(b);
-                    this.bulletsUsed.splice(i, 1);
-                    i--;
-                    b.speed = 0;
-                    break;
+    checkAsteroidCollision(){
+        const bullets = this.bulletsUsed;
+        const asteroids = this.asteroids;
+        // let bPos, aPos;
+
+        for (let i = 0; i < bullets.length; i++) {
+            let b = bullets[i];
+            // bPos = b.transform.getPosition();
+            if (b.collisionCircle) {
+                for (let a of asteroids) {
+                    // aPos = a.transform.getPosition();
+                    if (a.collisionCircle) {
+                        // if (b.collisionCircle.isCollidingWith(bPos, aPos, a.collisionCircle)) {
+                        if (b.collisionCircle.isCollidingWith(a.collisionCircle)){
+                            // console.log('it actually works!');
+                            a.gotHit();
+                            b.hasCollided = true;
+                            b.parent?.removeChild(b);
+                            this.bullets.push(b);
+                            bullets.splice(i, 1);
+                            i--;
+                            b.speed = 0;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -360,6 +336,11 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             //     this.meteoroids[i].timeUpdate(t);
             // }
             // console.log(this.bulletsUsed)
+            let delta = t-this.lastUpdateTime;
+            if (delta > 0.25) {
+                this.activateSpacebar = true;
+                this.lastUpdateTime = t;
+            }
             this.mapOverDescendants((d)=>{
                 (d as ANodeModel).timeUpdate(t);
                 this.checkAsteroidCollision();
