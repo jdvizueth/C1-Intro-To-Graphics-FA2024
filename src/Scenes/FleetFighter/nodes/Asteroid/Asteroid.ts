@@ -18,7 +18,7 @@ export class Asteroid extends A2DMeshModelPRSA {
     static asteroidTexture:ATexture;
 
     velocity:Vec2;
-    speed:number=10;
+    speed:number=4;
     rotationSpeed = 0.1;
 
     collisionCircle: Collision | null = null;
@@ -104,7 +104,7 @@ export class Asteroid extends A2DMeshModelPRSA {
         let yPos = 11;
         let randomPosX = Math.random() * 18 - 9;
         this.transform.setPosition(V3(randomPosX, yPos, 0));
-        this.speed = Math.random() + 1;
+        this.speed = (Math.random() + 1); //+ this.speed;
         this.hasUnclumped = false;
 
     }
