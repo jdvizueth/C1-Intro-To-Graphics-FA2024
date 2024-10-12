@@ -74,7 +74,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
      */
     asteroidsHidden: Asteroid[] = [];
     asteroidsActive: Asteroid[] = [];
-    asteroidSpawnMaxTime: number = 0.4;
+    asteroidSpawnMaxTime: number = 0.6;
     asteroidSpawnTimer: number = 0;
     prevTime: number = 0;
 
@@ -89,10 +89,10 @@ export class FleetFighterSceneModel extends App2DSceneModel{
      * This will add variables to the control pannel
      * @param appState
      */
-    initAppState(appState:AppState){
-        appState.addSliderIfMissing(FireParticleSystemModel.ParticleOrbitKey, 7, 0, 10, 0.001);
-        appState.addColorControl(FireParticleSystemModel.ParticleColorKey, Color.FromString("#00abe0"));
-    }
+    // initAppState(appState:AppState){
+    //     appState.addSliderIfMissing(FireParticleSystemModel.ParticleOrbitKey, 7, 0, 10, 0.001);
+    //     appState.addColorControl(FireParticleSystemModel.ParticleColorKey, Color.FromString("#00abe0"));
+    // }
 
     /**
      * This function is a good place to preload files that the scene uses; things like textures and shaders.
@@ -150,8 +150,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.player.collisionCircle = currCircle;
         this.player.addChild(currCircle);
 
-        // this.bullet = Bullet.Create();
-        // this.bullet.transform.scale = 1;
         this.bullets = [];
         for (let i = 0; i < GameConfigs.nBULLET; i++) {
             let newBullet = new Bullet(Polygon2D.Square(), Mat3.Translation2D([0,0]),
@@ -166,24 +164,11 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             currCircle.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
             newBullet.collisionCircle = currCircle;
             newBullet.addChild(currCircle);
-            // newBullet.transform.scale = 1;
             this.bullets.push(newBullet);
         }
 
         // Lab Cat on the scene. Or in the scene, I guess... Either way, this will cause the controller to make a view.
         this.addChild(this.player);
-
-        // Create meteoroids
-
-        // this.meteoroids.push(Meteoroid.Create());
-        // this.addChild(this.meteoroids[0]);
-        // this.meteoroids[0].transform.scale = 3.5;
-
-        // this.addChild(this.bullet);
-
-        // Lab Cat on the scene... again!
-        // this.labCatVectorHead = new CustomSVGModel(this.labCatSVG);
-        // this.addChild(this.labCatVectorHead);
 
 
         // Now let's create some particles...
@@ -239,23 +224,8 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.starParticleSystem = new BackgroundParticleSystemModel(colorM, 4, 1.5, 0.1, 0.4, 0.25);
         maxNumParticles = 25;
         this.starParticleSystem.initParticles(maxNumParticles)
-        // More Asteroid Stuff
-        // function createSpikyGeometry(k:number, spikiness:number=0, color:Color){
-        //     let polygon = Polygon2D.CreateForRendering() // default is hasColors=true, hasTextureCoords=false
-        //     // color = color??appState.getState("ColorValue1");
-        //     let spikeScale = 1-spikiness;
-        //     for(let v=0;v<k;v++){
-        //         let theta_step = -2*Math.PI/k; // The sign matters here!
-        //         let theta = v*theta_step;
-        //         let thetab = (v+0.5)*theta_step;
-        //         polygon.addVertex(V2(Math.cos(theta), Math.sin(theta)), color);
-        //         polygon.addVertex(V2(Math.cos(thetab), Math.sin(thetab)).times(spikeScale), color);
-        //     }
-        //     return polygon;
-        // }
+
         let newAsteroid = Asteroid.Create();
-        // newAsteroid.setMaterial(this.asteroidMaterial);
-        // newAsteroid.transform.setPosition(this.player.transform.getPosition());
         newAsteroid.transform.setPosition(V3(-11,5,0));
 
         let smallStarParticleMaterial = appState.CreateShaderMaterial(DefaultMaterials.PARTICLE_TEXTURE_2D_SHADER);
@@ -264,14 +234,10 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.starParticleSystem.setMaterial(smallStarParticleMaterial)
         this.starParticleSystem.zValue = -0.01;
         this.addChild(this.starParticleSystem);
-        for (let i=0;i<10; i++) {
-            // let asteroidCopy = new Asteroid(createSpikyGeometry(4, 0, new Color(0,150,150,1)));
+        for (let i=0;i<0; i++) {
             let asteroidCopy = Asteroid.Create();
             asteroidCopy.transform.scale = 4;
-
-            // asteroidCopy.setMaterial(this.asteroidMaterial);
             asteroidCopy.transform.setPosition(newAsteroid.transform.getPosition().plus(V3(0,12,0)));
-            // asteroidCopy.addChild(new Collision(3, collisionType.asteroid));
             let currCircle = new Collision(1, collisionType.bullet);
             currCircle.setMaterial(GetAppState().CreateMaterial(AMaterialManager.DefaultMaterials.TEXTURED2D_SHADER));
             asteroidCopy.collisionCircle = currCircle;
@@ -317,26 +283,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
 
     }
 
-    // Helper Functions ----------------------------------------------------
-    // checkAsteroidCollision(){
-    //     for (let i = 0; i < this.bulletsUsed.length; i++) {
-    //         let b = this.bulletsUsed[i];
-    //         for (let a of this.asteroids) {
-    //             let intersection = b.getIntersectionsWith(a);
-    //             if (intersection.length > 0){
-    //                 a.gotHit();
-    //                 b.hasCollided = true;
-    //
-    //                 b.parent?.removeChild(b);
-    //                 this.bullets.push(b);
-    //                 this.bulletsUsed.splice(i, 1);
-    //                 i--;
-    //                 b.speed = 0;
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
     checkAsteroidCollision(){
         for (let a of this.asteroidsActive) {
             // Check for player collisions
@@ -354,8 +300,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                 }
                 // console.log('at least it goes through the loop');
                 if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
-                    // console.log('it actually works!')
-                    // a.gotHit();
 
                     let parent:Asteroid|null = this.findParent(a);
                     // console.log(parent);
@@ -435,7 +379,6 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             // This is a good strategy in general. It iterates over all of the models in the scene and calls the
             // individual `timeUpdate` functions for each model. If you don't have many interactions between models you
             // can usually implement most of your scene logic this way
-            // this.checkAsteroidCollision();
             this.checkAsteroidCollision();
             // Update asteroid spawn timer
             let dt = t - this.prevTime;
