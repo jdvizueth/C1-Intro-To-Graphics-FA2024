@@ -29,6 +29,7 @@ export class Asteroid extends A2DMeshModelPRSA {
     shotBack:boolean = false;
 
     hasUnclumped:boolean = false;
+    isClumped = false;
 
 
     constructor(verts?:VertexArray2D, transform?:NodeTransform2D, ...args:any[]) {
@@ -138,6 +139,7 @@ export class Asteroid extends A2DMeshModelPRSA {
         this.parent?.removeChild(this);
         scene.addChild(this);
         this.setTransformMat3(parentToWorld);
+        this.isClumped = false;
 
         this.isChild = false;
         this.hasUnclumped = true;

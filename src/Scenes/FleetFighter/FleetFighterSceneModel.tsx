@@ -360,7 +360,9 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                     let parent:Asteroid|null = this.findParent(a);
                     // console.log(parent);
                     if (parent != null){
-                        parent.unClump(this);
+                        if (parent.isClumped){
+                            parent.unClump(this);
+                        }
                     }
                     // Propel asteroid backwards
                     a.shootBack();
@@ -386,6 +388,15 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                         a2.isChild = true;
                         a.addChild(a2);
                         a2.setTransform(newTransform);
+                        a2.isClumped = true;
+                        a.isClumped = true;
+                        // Reset velocities
+                        if (a.velocity.y > 0){
+                            a.velocity.y *= -1;
+                        }
+                        if (a2.velocity.y > 0){
+                            a2.velocity.y *= -1;
+                        }
                     }
                 }
             }
@@ -395,7 +406,9 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                 this.asteroidsActive = this.asteroidsActive.filter(obj => obj !== a);
                 this.asteroidsHidden.push(a);
                 let parent = this.parent;
-                a.unClump(this);
+                if (a.isClumped){
+                    a.unClump(this);
+                }
             }
         }
     }
