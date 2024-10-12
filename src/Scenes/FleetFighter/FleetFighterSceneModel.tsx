@@ -150,6 +150,8 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.player.collisionCircle = currCircle;
         this.player.addChild(currCircle);
 
+        // this.bullet = Bullet.Create();
+        // this.bullet.transform.scale = 1;
         this.bullets = [];
         for (let i = 0; i < GameConfigs.nBULLET; i++) {
             let newBullet = new Bullet(Polygon2D.Square(), Mat3.Translation2D([0,0]),
@@ -234,7 +236,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.starParticleSystem.setMaterial(smallStarParticleMaterial)
         this.starParticleSystem.zValue = -0.01;
         this.addChild(this.starParticleSystem);
-        for (let i=0;i<0; i++) {
+        for (let i=0;i<10; i++) {
             let asteroidCopy = Asteroid.Create();
             asteroidCopy.transform.scale = 4;
             asteroidCopy.transform.setPosition(newAsteroid.transform.getPosition().plus(V3(0,12,0)));
@@ -286,8 +288,9 @@ export class FleetFighterSceneModel extends App2DSceneModel{
     checkAsteroidCollision(){
         for (let a of this.asteroidsActive) {
             // Check for player collisions
-            if (this.player.collisionCircle && a.collisionCircle?.isCollidingWith(a.transform.getPosition(), this.player.transform.getPosition(), this.player.collisionCircle)) {
-                this.player.gotHit();
+            // if (this.player.collisionCircle && a.collisionCircle?.isCollidingWith(a.transform.getPosition(), this.player.transform.getPosition(), this.player.collisionCircle)) {
+            if (this.player.collisionCircle && a.collisionCircle?.isCollidingWith(this.player.collisionCircle)) {
+            this.player.gotHit();
             }
             // Check for bullet collisions
             for (let i=0;i<this.bulletsUsed.length;i++) {
@@ -299,7 +302,12 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                     this.bulletsUsed.splice(i, 1);
                 }
                 // console.log('at least it goes through the loop');
-                if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
+                // if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
+                // if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
+                if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(a.collisionCircle)) {
+
+                        // console.log('it actually works!')
+                    // a.gotHit();
 
                     let parent:Asteroid|null = this.findParent(a);
                     // console.log(parent);
@@ -323,7 +331,9 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             // Check for asteroid collisions
             for (let a2 of this.asteroidsActive) {
                 if (a != a2 && !a.isChild && !a2.isChild && !a2.hasUnclumped && !a.hasUnclumped){
-                    if (a2.collisionCircle && a.collisionCircle && a2.collisionCircle.isCollidingWith(a2.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
+                    // if (a2.collisionCircle && a.collisionCircle && a2.collisionCircle.isCollidingWith(a2.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
+                    if (a2.collisionCircle && a.collisionCircle && a2.collisionCircle.isCollidingWith(a.collisionCircle)) {
+
                         // Reparent a2 to a and clump them
                         let targetTransform = a2.getWorldTransform();
                         let aTransform = a.getWorldTransform();

@@ -50,9 +50,42 @@ export class Collision extends GameObject2DModel {
     //     }
     //     return null;
     // }
-    isCollidingWith(parentCoords: Vec3, otherParentCoords: Vec3, otherCircle: Collision): collisionType | null {
-        const dx = (parentCoords.x + this.localPositionX) - (otherParentCoords.x + otherCircle.localPositionX);
-        const dy = (parentCoords.y + this.localPositionY) - (otherParentCoords.y + otherCircle.localPositionY);
+    // isCollidingWith(parentCoords: Vec3, otherParentCoords: Vec3, otherCircle: Collision): collisionType | null {
+    //     const dx = (parentCoords.x + this.localPositionX) - (otherParentCoords.x + otherCircle.localPositionX);
+    //     const dy = (parentCoords.y + this.localPositionY) - (otherParentCoords.y + otherCircle.localPositionY);
+    //
+    //     const squaredDistance = dx * dx + dy * dy;
+    //     const squaredRadiusSum = (this.radius + otherCircle.radius) * (this.radius + otherCircle.radius);
+    //
+    //     if (squaredDistance <= squaredRadiusSum) {
+    //         return otherCircle.collisionType;
+    //     }
+    //     return null;
+    // }
+
+    // getWorldCoords(): number[] {
+    //     // let matrix = this.getWorldTransform2D().times(this.transform.getMatrix());
+    //     let matrix = this.getWorldTransform2D().getMatrix();
+    //     const result = [
+    //         matrix.m00 * this.localPositionX + matrix.m01 * this.localPositionY + matrix.m02 * 1,
+    //         matrix.m10 * this.localPositionX + matrix.m11 * this.localPositionY + matrix.m12 * 1,
+    //         matrix.m20 * this.localPositionX + matrix.m21 * this.localPositionY + matrix.m22 * 1,
+    //     ];
+    //     return result;
+    // }
+    getWorldCoords(): number[] {
+        const matrix = this.getWorldTransform2D().getMatrix();
+        const result = [
+            matrix.m00 * this.localPositionX + matrix.m01 * this.localPositionY + matrix.m02,
+            matrix.m10 * this.localPositionX + matrix.m11 * this.localPositionY + matrix.m12,
+        ];
+        return result;
+    }
+
+
+    isCollidingWith(otherCircle: Collision) : collisionType | null {
+        const dx = this.getWorldCoords()[0] - otherCircle.getWorldCoords()[0];
+        const dy = this.getWorldCoords()[1] - otherCircle.getWorldCoords()[1];
 
         const squaredDistance = dx * dx + dy * dy;
         const squaredRadiusSum = (this.radius + otherCircle.radius) * (this.radius + otherCircle.radius);
@@ -61,6 +94,7 @@ export class Collision extends GameObject2DModel {
             return otherCircle.collisionType;
         }
         return null;
+
     }
 
 
