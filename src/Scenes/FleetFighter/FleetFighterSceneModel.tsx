@@ -394,10 +394,10 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             // Update asteroid spawn timer
             let dt = t - this.prevTime;
             this.asteroidSpawnTimer += dt;
-            if (this.asteroidSpawnTimer >= this.asteroidSpawnMaxTime){
+            if ((this.asteroidSpawnTimer >= this.asteroidSpawnMaxTime) && this.xPressed){
                 if (this.asteroidsHidden.length > 0){
                     let spawnAsteroid = this.asteroidsHidden.pop();
-                    if (spawnAsteroid && this.xPressed){
+                    if (spawnAsteroid){
                         spawnAsteroid.spawn();
                         this.asteroidsActive.push(spawnAsteroid);
                     }
