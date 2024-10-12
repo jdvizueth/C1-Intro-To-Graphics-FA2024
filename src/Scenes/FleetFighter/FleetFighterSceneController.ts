@@ -133,6 +133,9 @@ export class FleetFighterSceneController extends App2DSceneController{
                             this.prevKeyS = true;
                         }
                     }
+                    if (keysDownState['x']) {
+                        this.model.xPressed = true;
+                    }
                     if (keysDownState[' ']) {
                         console.log("clicked spacebar");
                         event.preventDefault();

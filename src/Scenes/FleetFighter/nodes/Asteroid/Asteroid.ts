@@ -114,7 +114,7 @@ export class Asteroid extends A2DMeshModelPRSA {
         let randomPosX = Math.random() * 18 - 9;
         this.transform.setPosition(V3(randomPosX, yPos, 0));
         // this.speed = (Math.random() + 3) + this.baseSpeed;
-        this.velocity.y = -1 * (Math.random() + 3) + this.baseSpeed;
+        this.velocity.y = -1 * (Math.random() + 4) + this.baseSpeed;
         this.hasUnclumped = false;
         this.shotBack = false;
 

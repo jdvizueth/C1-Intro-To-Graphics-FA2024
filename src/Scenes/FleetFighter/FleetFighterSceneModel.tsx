@@ -46,6 +46,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
 
 
     player!:Player;
+    xPressed: boolean = false;
     // meteoroids:Meteoroid[] = [];
 
 
@@ -396,7 +397,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             if (this.asteroidSpawnTimer >= this.asteroidSpawnMaxTime){
                 if (this.asteroidsHidden.length > 0){
                     let spawnAsteroid = this.asteroidsHidden.pop();
-                    if (spawnAsteroid){
+                    if (spawnAsteroid && this.xPressed){
                         spawnAsteroid.spawn();
                         this.asteroidsActive.push(spawnAsteroid);
                     }
