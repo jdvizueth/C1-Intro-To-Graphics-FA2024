@@ -15,6 +15,7 @@ import {Collision, collisionType} from "../Collision";
 export class Player extends A2DMeshModelPRSA {
     static PlayerMaterial:AShaderMaterial|undefined=undefined;
     static PlayerTexture:ATexture;
+    static PlayerTexture2:ATexture;
 
     velocity:Vec2;
     speed:number=0.1;
@@ -22,6 +23,12 @@ export class Player extends A2DMeshModelPRSA {
     windDirection:number = 1;
     collisionCircle: Collision | null = null;
 
+    health:number = 2;
+    iFrameMax:number = 1;
+    iFrameTimer:number = 0;
+    incrementIFrame = false;
+    prevTime:number = 0;
+    onHurtTexture = false;
 
     constructor(verts?:VertexArray2D, transform?:NodeTransform2D, ...args:any[]) {
         if(Player.PlayerMaterial === undefined){
@@ -34,6 +41,7 @@ export class Player extends A2DMeshModelPRSA {
     static async PreloadAssets(){
         if(Player.PlayerMaterial === undefined){
             Player.PlayerTexture = await ATexture.LoadAsync("./images/Ship1.png");
+            Player.PlayerTexture2 = await ATexture.LoadAsync("./images/Ship1Red.png");
         }
     }
 
@@ -64,17 +72,24 @@ export class Player extends A2DMeshModelPRSA {
 
     timeUpdate(t: number, ...args:any[]) {
         super.timeUpdate(t, ...args);
-        // let appState = GetAppState();
-        // appState.setState("LabCatScale", 5+Math.sin(t));
-
-        // Update the react component that displays this value
-        // appState.updateComponents()
-
+        let dt = t - this.prevTime;
+        // Increment the IFrames if necessary
+        if (this.incrementIFrame){
+            this.iFrameTimer += dt;
+            if (this.iFrameTimer >= this.iFrameMax){
+                this.incrementIFrame = false;
+                this.iFrameTimer = 0;
+                if(Player.PlayerMaterial) {
+                    Player.PlayerMaterial.setTexture("color", Player.PlayerTexture);
+                }
+            }
+        }
         // this.transform.scale = appState.getState("LabCatScale");
         this.transform.position = this.transform.position.plus(this.velocity);
         if (this.velocity.x == 0){
             this.smokeParticleSystem.setIsStill(true);
         }
+        this.prevTime = t;
     }
 
     onMoveRight(){
@@ -101,6 +116,7 @@ export class Player extends A2DMeshModelPRSA {
     makeParticleSystemChild(particleSystem:any){
         if (particleSystem instanceof SmokeParticleSystemModel){
             this.smokeParticleSystem = particleSystem;
+            this.smokeParticleSystem.setVisible = false;
         }
         let targetTransform = particleSystem.getWorldTransform();
         let playerTransform = this.getWorldTransform();
@@ -110,8 +126,18 @@ export class Player extends A2DMeshModelPRSA {
     }
 
     gotHit(): void {
-        // console.log("GotHit");
-        // this.transform.scale = 1;
+        if (!this.incrementIFrame){
+            if(Player.PlayerMaterial) {
+                Player.PlayerMaterial.setTexture("color", Player.PlayerTexture2);
+            }
+            this.health -= 1;
+            this.incrementIFrame = true;
+            console.log(this.health);
+            if (this.health <= 1){
+                this.smokeParticleSystem.setVisible = true;
+            }
+        }
+
     }
 
 }

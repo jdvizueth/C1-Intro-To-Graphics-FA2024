@@ -74,7 +74,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
      */
     asteroidsHidden: Asteroid[] = [];
     asteroidsActive: Asteroid[] = [];
-    asteroidSpawnMaxTime: number = 1;
+    asteroidSpawnMaxTime: number = 0.4;
     asteroidSpawnTimer: number = 0;
     prevTime: number = 0;
 
@@ -264,7 +264,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
         this.starParticleSystem.setMaterial(smallStarParticleMaterial)
         this.starParticleSystem.zValue = -0.01;
         this.addChild(this.starParticleSystem);
-        for (let i=0;i<6; i++) {
+        for (let i=0;i<10; i++) {
             // let asteroidCopy = new Asteroid(createSpikyGeometry(4, 0, new Color(0,150,150,1)));
             let asteroidCopy = Asteroid.Create();
             asteroidCopy.transform.scale = 4;
@@ -356,12 +356,14 @@ export class FleetFighterSceneModel extends App2DSceneModel{
                 if (b.collisionCircle && a.collisionCircle && b.collisionCircle.isCollidingWith(b.transform.getPosition(), a.transform.getPosition(), a.collisionCircle)) {
                     // console.log('it actually works!')
                     // a.gotHit();
+
                     let parent:Asteroid|null = this.findParent(a);
                     // console.log(parent);
                     if (parent != null){
                         parent.unClump(this);
                     }
-
+                    // Propel asteroid backwards
+                    a.shootBack();
                     b.hasCollided = true;
 
                     b.parent?.removeChild(b);
@@ -392,6 +394,7 @@ export class FleetFighterSceneModel extends App2DSceneModel{
             if (a.shouldDespawn){
                 this.asteroidsActive = this.asteroidsActive.filter(obj => obj !== a);
                 this.asteroidsHidden.push(a);
+                let parent = this.parent;
                 a.unClump(this);
             }
         }

@@ -17,6 +17,7 @@ export class SmokeParticleSystemModel extends Instanced2DParticleSystemModel<Smo
     swayRight = false;
     windSpeed: number = 0.05;
     isStill = true;
+    setVisible:boolean = false;
     /**
      * Particle system model for using instanced particles
      * "Instanced" graphics are ones where the same geometry is rendered many times, possibly with minor variations (e.g., in position and color). Each render of the object is an "instance". This is handled as a special case so that the program can share common data across the different instances, which helps scale up to a larger number of instances more efficiently. This makes it great for something like a particle system, where you have many copies of the same geometry.
@@ -39,59 +40,61 @@ export class SmokeParticleSystemModel extends Instanced2DParticleSystemModel<Smo
      */
     timeUpdate(t: number, ...args:any[]) {
         super.timeUpdate(t, ...args); // Be a good citizen and call the parent function in case something important happens there...
+        if (this.setVisible) {
+            let time = t - this.lastUpdateTime;
 
-        let time = t - this.lastUpdateTime;
+            // Go through hidden list to see what to spawn
+            if (this.spawnTimerProgress >= this.spawnTimerLength){
+                let randomPosX = (Math.random()-0.5);
+                for (let i=0; i<2; i++){
+                    if (this.hiddenParticles.length > 0){
+                        let particle: Smoke2DParticle | undefined = this.hiddenParticles.pop(); // This flame particle const should never be called
+                        this.spawnParticle(particle, randomPosX);
+                    }
+                }
+                this.spawnTimerProgress = 0;
+            }
 
-        // Go through hidden list to see what to spawn
-        if (this.spawnTimerProgress >= this.spawnTimerLength){
-            let randomPosX = (Math.random()-0.5);
-            for (let i=0; i<2; i++){
-                if (this.hiddenParticles.length > 0){
-                    let particle: Smoke2DParticle | undefined = this.hiddenParticles.pop(); // This flame particle const should never be called
-                    this.spawnParticle(particle, randomPosX);
+            // iterate through the visible particles and update properties of each one
+            for(let p=0;p<this.nParticles;p++){
+                if (this.particles[p].visible){
+                    let particle = this.particles[p];
+                    let amplitude = 0.2;
+                    let frequency = 2;
+
+                    particle.position.y -= .004*particle.speed*this.smokeGrowth;
+                    particle.position.x = particle.startPos.x + (amplitude * (Math.sin(frequency * time)));
+
+                    let lifePercentage = particle.age / particle.lifeSpan;
+                    particle.position.x += this.windX * lifePercentage;
+                    // particle.position.x += 2 * lifePercentage;
+
+                    this.updateWind(time);
+
+                    // Update radius to get smaller with age
+                    particle.radius = particle.iRadius * (1-lifePercentage);
+
+                    // Update the color to shift lighter with age
+                    particle.color = particle.iColor.GetDarkened(1 - (lifePercentage * 100));
+
+                    // Kill particle once reached end of lifespan
+                    if (particle.age >= particle.lifeSpan){
+                        this.killParticle(particle);
+                    }
+
+                    // Age the particle
+                    particle.age += time;
                 }
             }
-            this.spawnTimerProgress = 0;
+
+            // Let's signal that our particle data has changed, which will trigger the view to refresh.
+            this.signalParticlesUpdated();
+
+            // Remember to update `this.lastUpdateTime` so that it will be accurate the next time you call this function!
+            this.spawnTimerProgress += time;
+            this.lastUpdateTime = t;
         }
 
-        // iterate through the visible particles and update properties of each one
-        for(let p=0;p<this.nParticles;p++){
-            if (this.particles[p].visible){
-                let particle = this.particles[p];
-                let amplitude = 0.2;
-                let frequency = 2;
-
-                particle.position.y -= .004*particle.speed*this.smokeGrowth;
-                particle.position.x = particle.startPos.x + (amplitude * (Math.sin(frequency * time)));
-
-                let lifePercentage = particle.age / particle.lifeSpan;
-                particle.position.x += this.windX * lifePercentage;
-                // particle.position.x += 2 * lifePercentage;
-
-                this.updateWind(time);
-
-                // Update radius to get smaller with age
-                particle.radius = particle.iRadius * (1-lifePercentage);
-
-                // Update the color to shift lighter with age
-                particle.color = particle.iColor.GetDarkened(1 - (lifePercentage * 100));
-
-                // Kill particle once reached end of lifespan
-                if (particle.age >= particle.lifeSpan){
-                    this.killParticle(particle);
-                }
-
-                // Age the particle
-                particle.age += time;
-            }
-        }
-
-        // Let's signal that our particle data has changed, which will trigger the view to refresh.
-        this.signalParticlesUpdated();
-
-        // Remember to update `this.lastUpdateTime` so that it will be accurate the next time you call this function!
-        this.spawnTimerProgress += time;
-        this.lastUpdateTime = t;
     }
 
     /**

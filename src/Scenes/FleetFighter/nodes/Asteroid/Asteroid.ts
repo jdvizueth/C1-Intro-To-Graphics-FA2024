@@ -17,14 +17,16 @@ export class Asteroid extends A2DMeshModelPRSA {
     static asteroidMaterial:AShaderMaterial|undefined=undefined;
     static asteroidTexture:ATexture;
 
-    velocity:Vec2;
+    velocity:Vec2 = V2(0,-1);
     speed:number=4;
+    baseSpeed:number = 2;
     rotationSpeed = 0.1;
 
     collisionCircle: Collision | null = null;
     shouldDespawn: boolean = true;
     prevTime:number = 0;
     isChild:boolean = false;
+    shotBack:boolean = false;
 
     hasUnclumped:boolean = false;
 
@@ -87,7 +89,7 @@ export class Asteroid extends A2DMeshModelPRSA {
             this.setTransformMat3(newTransform);
             // Change position
             let posX = this.transform.getPosition().x;
-            let posY = this.transform.getPosition().y - (this.speed*dt);
+            let posY = this.transform.getPosition().y + (this.velocity.y*dt);
             let newPos = V3(posX, posY, 0);
             this.transform.setPosition(newPos);
         }
@@ -98,19 +100,27 @@ export class Asteroid extends A2DMeshModelPRSA {
         console.log("GotHit");
     }
 
+    shootBack(){
+        if (!this.shotBack){
+            this.velocity.y *= -1;
+            this.shotBack = true;
+        }
+    }
 
     spawn(){
         this.shouldDespawn = false;
         let yPos = 11;
         let randomPosX = Math.random() * 18 - 9;
         this.transform.setPosition(V3(randomPosX, yPos, 0));
-        this.speed = (Math.random() + 1); //+ this.speed;
+        // this.speed = (Math.random() + 3) + this.baseSpeed;
+        this.velocity.y = -1 * (Math.random() + 3) + this.baseSpeed;
         this.hasUnclumped = false;
+        this.shotBack = false;
 
     }
 
     checkDespawn() {
-        if (this.transform.getPosition().y <= -11 && !this.isChild) {
+        if ((this.transform.getPosition().y <= -11 || this.transform.getPosition().y >= 14) && !this.isChild) {
             this.shouldDespawn = true;
         }
     }
